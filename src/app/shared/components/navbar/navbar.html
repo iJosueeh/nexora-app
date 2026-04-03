@@ -1,0 +1,128 @@
+<nav
+  class="fixed top-0 left-0 right-0 z-50 flex items-center px-6 py-3 bg-[#0d0d0d]/80 backdrop-blur-md border-b border-white/6"
+>
+  <!-- Logo -->
+  <a
+    routerLink="/"
+    class="text-xl font-bold mr-10 shrink-0"
+    style="font-family: 'Inter', sans-serif"
+  >
+    <span class="text-white">Nex</span><span class="text-[#e74c3c]">ora</span>
+  </a>
+
+  <!-- Nav links -->
+  <ul class="hidden md:flex items-center gap-7 text-sm font-medium">
+    <li>
+      <a
+        routerLink="/funcionalidad"
+        routerLinkActive="text-white border-b border-white pb-0.5"
+        class="text-gray-400 hover:text-white transition-colors duration-200"
+      >
+        Funcionalidad
+      </a>
+    </li>
+    <li>
+      <a
+        routerLink="/comunidad"
+        routerLinkActive="text-white border-b border-white pb-0.5"
+        class="text-gray-400 hover:text-white transition-colors duration-200"
+      >
+        Comunidad
+      </a>
+    </li>
+    <li>
+      <a
+        routerLink="/testimonios"
+        routerLinkActive="text-white border-b border-white pb-0.5"
+        class="text-gray-400 hover:text-white transition-colors duration-200"
+      >
+        Testimonios
+      </a>
+    </li>
+    <li>
+      <a
+        routerLink="/guia-practica"
+        routerLinkActive="text-white border-b border-white pb-0.5"
+        class="text-gray-400 hover:text-white transition-colors duration-200"
+      >
+        Guía Práctica
+      </a>
+    </li>
+  </ul>
+
+  <!-- Right actions -->
+  <div class="ml-auto flex items-center gap-3">
+    <a
+      routerLink="/login"
+      class="hidden md:inline-block text-sm text-gray-400 hover:text-white transition-colors duration-200 px-3 py-1.5"
+    >
+      Iniciar Sesión
+    </a>
+    <a
+      routerLink="/register"
+      class="inline-flex items-center gap-2 bg-[#c0392b] hover:bg-[#e74c3c] text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded-lg transition-colors duration-200"
+    >
+      Únete al Nexo
+    </a>
+
+    <!-- Mobile menu button -->
+    <button class="md:hidden flex flex-col gap-1.5 p-1" (click)="toggleMenu()" aria-label="Menú">
+      <span
+        class="block w-5 h-0.5 bg-gray-400 transition-all duration-200"
+        [class.rotate-45]="menuOpen"
+        [class.translate-y-2]="menuOpen"
+      ></span>
+      <span
+        class="block w-5 h-0.5 bg-gray-400 transition-all duration-200"
+        [class.opacity-0]="menuOpen"
+      ></span>
+      <span
+        class="block w-5 h-0.5 bg-gray-400 transition-all duration-200"
+        [class.-rotate-45]="menuOpen"
+        [class.-translate-y-2]="menuOpen"
+      ></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  @if (menuOpen) {
+    <div
+      class="absolute top-full left-0 right-0 bg-[#0d0d0d] border-b border-white/6 px-6 py-4 flex flex-col gap-4 md:hidden"
+    >
+      <a
+        routerLink="/funcionalidad"
+        (click)="menuOpen = false"
+        class="text-sm text-gray-400 hover:text-white transition-colors"
+        >Funcionalidad</a
+      >
+      <a
+        routerLink="/comunidad"
+        (click)="menuOpen = false"
+        class="text-sm text-gray-400 hover:text-white transition-colors"
+        >Comunidad</a
+      >
+      <a
+        routerLink="/testimonios"
+        (click)="menuOpen = false"
+        class="text-sm text-gray-400 hover:text-white transition-colors"
+        >Testimonios</a
+      >
+      <a
+        routerLink="/guia-practica"
+        (click)="menuOpen = false"
+        class="text-sm text-gray-400 hover:text-white transition-colors"
+        >Guía Práctica</a
+      >
+      <hr class="border-white/6" />
+      <a
+        routerLink="/login"
+        (click)="menuOpen = false"
+        class="text-sm text-gray-400 hover:text-white transition-colors"
+        >Iniciar Sesión</a
+      >
+    </div>
+  }
+</nav>
+
+<!-- Spacer para compensar el fixed -->
+<div class="h-13"></div>

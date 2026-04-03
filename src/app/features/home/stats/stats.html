@@ -1,0 +1,26 @@
+<section class="bg-[#111111] px-6 py-16 md:px-16">
+
+  <div class="flex flex-col md:flex-row items-center justify-center divide-y md:divide-y-0 md:divide-x divide-white/6">
+
+    @for (stat of stats; track stat.id) {
+      <div class="flex flex-col items-center gap-2 py-10 md:py-0 md:px-20 first:pt-0 last:pb-0 md:first:pt-0 md:last:pb-0">
+
+        <!-- Number -->
+        <div
+          class="text-5xl md:text-6xl font-black leading-none text-white"
+          style="font-family: 'Inter', sans-serif;"
+        >
+          <span [style.color]="stat.highlight ? '#e74c3c' : 'white'">{{ stat.value }}</span>
+        </div>
+
+        <!-- Label -->
+        <p class="text-[0.6rem] font-semibold tracking-[0.2em] uppercase text-gray-500">
+          {{ stat.label }}
+        </p>
+
+      </div>
+    }
+
+  </div>
+
+</section>

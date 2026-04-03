@@ -1,0 +1,97 @@
+@if (isVisible) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0d0d] transition-opacity duration-600"
+    [class.opacity-0]="isFadingOut"
+    [class.pointer-events-none]="isFadingOut"
+  >
+    <!-- Center content -->
+    <div class="flex flex-col items-center w-85">
+      <!-- App Icon -->
+      <div
+        class="mb-5 transition-all duration-500"
+        [class.opacity-0]="progress === 0"
+        [class.-translate-y-3]="progress === 0"
+        [class.scale-90]="progress === 0"
+        [class.opacity-100]="progress > 0"
+        [class.translate-y-0]="progress > 0"
+        [class.scale-100]="progress > 0"
+      >
+        <div
+          class="w-18 h-18 rounded-[18px] flex items-center justify-center"
+          style="
+            background: linear-gradient(145deg, #e74c3c 0%, #96281b 100%);
+            box-shadow:
+              0 8px 32px rgba(231, 76, 60, 0.3),
+              0 2px 8px rgba(0, 0, 0, 0.5);
+          "
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-9 h-9">
+            <path
+              d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 007.5 12.174v-.224c0-.131.067-.248.172-.311a54.614 54.614 0 014.653-2.52.75.75 0 00-.65-1.352 56.129 56.129 0 00-4.78 2.589 1.858 1.858 0 00-.859 1.228 49.803 49.803 0 00-4.634-1.527.75.75 0 01-.231-1.337A60.653 60.653 0 0111.7 2.805z"
+            />
+            <path
+              d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.285a.75.75 0 01-.46.71 47.878 47.878 0 00-8.105 4.342.75.75 0 01-.832 0 47.877 47.877 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 016 13.18v1.27a1.5 1.5 0 00-.14 2.508c-.09.38-.222.753-.397 1.11.452.213.901.434 1.346.661a6.729 6.729 0 00.551-1.608 1.5 1.5 0 00.14-2.67v-.645a48.549 48.549 0 013.44 1.668 2.25 2.25 0 002.12 0z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Brand Name -->
+      <div
+        class="mb-1 transition-all duration-500 delay-100"
+        [class.opacity-0]="progress === 0"
+        [class.translate-y-2]="progress === 0"
+        [class.opacity-100]="progress > 0"
+        [class.translate-y-0]="progress > 0"
+        style="
+          font-family: 'Inter', sans-serif;
+          font-size: 2rem;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+        "
+      >
+        <span class="text-white">Nex</span><span class="text-[#f1948a]">ora</span>
+      </div>
+
+      <!-- Divider -->
+      <div
+        class="h-px mb-7 transition-all duration-700 delay-300"
+        [style.width]="progress > 0 ? '64px' : '0px'"
+        style="
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.15) 50%,
+            transparent 100%
+          );
+        "
+      ></div>
+
+      <!-- Progress section -->
+      <div
+        class="w-full flex flex-col items-center gap-3 transition-opacity duration-500 delay-400"
+        [class.opacity-0]="progress === 0"
+        [class.opacity-100]="progress > 0"
+      >
+        <!-- Track -->
+        <div class="w-full h-0.5 rounded-full overflow-hidden bg-white/8">
+          <div
+            class="h-full rounded-full transition-[width] duration-500 ease-in-out"
+            [style.width.%]="progress"
+            style="background: linear-gradient(90deg, #c0392b 0%, #f1948a 100%)"
+          ></div>
+        </div>
+
+        <!-- Status -->
+        <div class="flex flex-col items-center gap-1 text-center">
+          <p class="text-[0.65rem] font-semibold tracking-[0.18em] text-[#f1948a]">
+            PREPARANDO ENTORNO...
+          </p>
+          <p class="text-[0.72rem] text-gray-500 min-h-4 transition-opacity duration-300">
+            {{ statusMessage }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,40 @@
+<section
+  class="relative px-6 py-24 md:px-16 flex flex-col items-center text-center overflow-hidden"
+  style="background: linear-gradient(to bottom, #0d0d0d 0%, #1a0808 50%, #0d0d0d 100%);"
+>
+
+  <!-- Background glow -->
+  <div
+    class="absolute inset-0 pointer-events-none"
+    style="background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(192,57,43,0.12) 0%, transparent 70%);"
+  ></div>
+
+  <!-- Content -->
+  <div class="relative z-10 flex flex-col items-center gap-6 max-w-2xl">
+
+    <h2
+      class="text-4xl md:text-5xl font-black text-white leading-tight"
+      style="font-family: 'Inter', sans-serif;"
+    >
+      ¿Listo para dar el siguiente paso?
+    </h2>
+
+    <p class="text-gray-500 text-sm md:text-base leading-relaxed max-w-md">
+      El portal está abierto. Entra a la próxima generación de redes académicas.
+    </p>
+
+    <a
+      routerLink="/register"
+      class="inline-flex items-center gap-2 bg-[#c0392b] hover:bg-[#e74c3c] text-white text-xs font-black tracking-[0.15em] uppercase px-8 py-4 rounded-lg transition-colors duration-200 mt-2"
+    >
+      Entrar al Portal
+    </a>
+
+    <!-- Fine print -->
+    <p class="text-gray-600 text-xs mt-2">
+      Institutional access required · UTP researchers only
+    </p>
+
+  </div>
+
+</section>
