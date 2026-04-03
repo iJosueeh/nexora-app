@@ -1,11 +1,16 @@
 @if (isVisible) {
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-[#0d0d0d] transition-opacity duration-600"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-[#06080d] transition-opacity duration-600"
     [class.opacity-0]="isFadingOut"
     [class.pointer-events-none]="isFadingOut"
   >
+    <div
+      class="pointer-events-none absolute inset-0"
+      style="background: radial-gradient(circle at 50% 46%, rgba(18, 26, 42, 0.2) 0%, transparent 54%);"
+    ></div>
+
     <!-- Center content -->
-    <div class="flex flex-col items-center w-85">
+    <div class="relative flex w-[20rem] -translate-y-10 flex-col items-center px-3 sm:w-86 md:-translate-y-8">
       <!-- App Icon -->
       <div
         class="mb-5 transition-all duration-500"
@@ -17,15 +22,15 @@
         [class.scale-100]="progress > 0"
       >
         <div
-          class="w-18 h-18 rounded-[18px] flex items-center justify-center"
+          class="flex h-[3.7rem] w-[3.7rem] items-center justify-center rounded-[11px]"
           style="
-            background: linear-gradient(145deg, #e74c3c 0%, #96281b 100%);
+            background: linear-gradient(165deg, #de3532 0%, #a1141f 100%);
             box-shadow:
-              0 8px 32px rgba(231, 76, 60, 0.3),
-              0 2px 8px rgba(0, 0, 0, 0.5);
+              0 12px 40px rgba(188, 36, 38, 0.24),
+              0 2px 10px rgba(0, 0, 0, 0.42);
           "
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-9 h-9">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="h-6 w-6">
             <path
               d="M11.7 2.805a.75.75 0 01.6 0A60.65 60.65 0 0122.83 8.72a.75.75 0 01-.231 1.337 49.949 49.949 0 00-9.902 3.912l-.003.002-.34.18a.75.75 0 01-.707 0A50.009 50.009 0 007.5 12.174v-.224c0-.131.067-.248.172-.311a54.614 54.614 0 014.653-2.52.75.75 0 00-.65-1.352 56.129 56.129 0 00-4.78 2.589 1.858 1.858 0 00-.859 1.228 49.803 49.803 0 00-4.634-1.527.75.75 0 01-.231-1.337A60.653 60.653 0 0111.7 2.805z"
             />
@@ -45,23 +50,24 @@
         [class.translate-y-0]="progress > 0"
         style="
           font-family: 'Inter', sans-serif;
-          font-size: 2rem;
+          font-size: 2.95rem;
           font-weight: 700;
-          letter-spacing: -0.5px;
+          letter-spacing: -1.15px;
+          line-height: 1;
         "
       >
-        <span class="text-white">Nex</span><span class="text-[#f1948a]">ora</span>
+        <span class="text-[#e7e8ea]">Nex</span><span class="text-[#f0a49c]">ora</span>
       </div>
 
       <!-- Divider -->
       <div
-        class="h-px mb-7 transition-all duration-700 delay-300"
+        class="mb-8 h-px transition-all duration-700 delay-300"
         [style.width]="progress > 0 ? '64px' : '0px'"
         style="
           background: linear-gradient(
             90deg,
             transparent 0%,
-            rgba(255, 255, 255, 0.15) 50%,
+            rgba(255, 255, 255, 0.18) 50%,
             transparent 100%
           );
         "
@@ -69,25 +75,25 @@
 
       <!-- Progress section -->
       <div
-        class="w-full flex flex-col items-center gap-3 transition-opacity duration-500 delay-400"
+        class="flex w-full flex-col items-center gap-3 transition-opacity duration-500 delay-400"
         [class.opacity-0]="progress === 0"
         [class.opacity-100]="progress > 0"
       >
         <!-- Track -->
-        <div class="w-full h-0.5 rounded-full overflow-hidden bg-white/8">
+        <div class="h-0.5 w-full overflow-hidden rounded-full bg-white/18">
           <div
-            class="h-full rounded-full transition-[width] duration-500 ease-in-out"
+            class="h-full rounded-full transition-[width] duration-700 ease-out"
             [style.width.%]="progress"
-            style="background: linear-gradient(90deg, #c0392b 0%, #f1948a 100%)"
+            style="background: linear-gradient(90deg, #df3432 0%, #f08f84 100%)"
           ></div>
         </div>
 
         <!-- Status -->
         <div class="flex flex-col items-center gap-1 text-center">
-          <p class="text-[0.65rem] font-semibold tracking-[0.18em] text-[#f1948a]">
+          <p class="text-[0.95rem] font-semibold uppercase tracking-[0.14em] text-[#f0a39a] md:text-[1rem]">
             PREPARANDO ENTORNO...
           </p>
-          <p class="text-[0.72rem] text-gray-500 min-h-4 transition-opacity duration-300">
+          <p class="min-h-4 text-[0.78rem] text-[#6d7280] transition-opacity duration-300 md:text-[0.8rem]">
             {{ statusMessage }}
           </p>
         </div>

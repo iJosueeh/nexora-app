@@ -10,31 +10,54 @@ export class Loading implements OnInit, OnDestroy {
   @Output() splashComplete = new EventEmitter<void>();
 
   progress = 0;
-  statusMessage = 'Iniciando sistema...';
+  statusMessage = 'Inicializando núcleo editorial...';
   isVisible = true;
   isFadingOut = false;
 
   private readonly loadingSteps = [
-    { progress: 15, message: 'Verificando credenciales académicas...' },
-    { progress: 35, message: 'Cargando módulos de aprendizaje...' },
-    { progress: 55, message: 'Sincronizando datos del perfil...' },
+    { progress: 14, message: 'Verificando credenciales académicas...', delay: 360, duration: 480 },
+    { progress: 33, message: 'Cargando capas de colaboración...', delay: 520, duration: 560 },
+    { progress: 52, message: 'Sincronizando canales de investigación...', delay: 620, duration: 620 },
     {
-      progress: 75,
+      progress: 72,
       message: 'Garantizar la seguridad de los protocolos académicos cifrados...',
+      delay: 760,
+      duration: 760,
     },
-    { progress: 90, message: 'Preparando entorno personalizado...' },
-    { progress: 100, message: 'Listo.' },
+    { progress: 89, message: 'Preparando entorno...', delay: 600, duration: 620 },
+    { progress: 100, message: 'Listo.', delay: 480, duration: 440 },
   ];
 
   private timeouts: ReturnType<typeof setTimeout>[] = [];
+  private intervals: ReturnType<typeof setInterval>[] = [];
+
+  private animateProgress(target: number, duration: number): void {
+    const start = this.progress;
+    const startedAt = Date.now();
+
+    const intervalId = setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      const t = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+
+      this.progress = Number((start + (target - start) * eased).toFixed(1));
+
+      if (t >= 1) {
+        this.progress = target;
+        clearInterval(intervalId);
+      }
+    }, 16);
+
+    this.intervals.push(intervalId);
+  }
 
   private runLoadingSequence(): void {
-    let delay = 400;
+    let accumulatedDelay = 220;
 
-    this.loadingSteps.forEach((step, index) => {
+    this.loadingSteps.forEach((step) => {
       const t = setTimeout(() => {
-        this.progress = step.progress;
         this.statusMessage = step.message;
+        this.animateProgress(step.progress, step.duration);
 
         if (step.progress === 100) {
           const fadeTimeout = setTimeout(() => {
@@ -44,13 +67,13 @@ export class Loading implements OnInit, OnDestroy {
               this.splashComplete.emit();
             }, 600);
             this.timeouts.push(removeTimeout);
-          }, 600);
+          }, 520);
           this.timeouts.push(fadeTimeout);
         }
-      }, delay);
+      }, accumulatedDelay);
 
       this.timeouts.push(t);
-      delay += index < 2 ? 500 : 700;
+      accumulatedDelay += step.delay;
     });
   }
 
@@ -59,6 +82,7 @@ export class Loading implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.timeouts.forEach((t) => clearTimeout(t));
+    this.intervals.forEach((i) => clearInterval(i));
   }
 
 }

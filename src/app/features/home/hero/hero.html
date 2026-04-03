@@ -1,48 +1,52 @@
 <section
-  class="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden"
-  style="background: linear-gradient(to bottom, #1a0a0a 0%, #0d0d0d 60%);"
+  class="relative flex min-h-[92vh] flex-col justify-center overflow-hidden bg-[#070a12] px-4 pb-12 pt-24 text-center md:min-h-[95vh] md:px-8 md:pt-28 lg:px-12 lg:pt-32"
 >
 
   <!-- Background image overlay -->
   <div
-    class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+    class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-35"
     style="background-image: url('/assets/images/hero-bg.jpg');"
+  ></div>
+
+  <div
+    class="absolute inset-0"
+    style="background: linear-gradient(180deg, rgba(10, 36, 64, 0.72) 0%, rgba(6, 9, 15, 0.68) 42%, rgba(8, 10, 14, 0.96) 100%);"
   ></div>
 
   <!-- Red bottom fade -->
   <div
-    class="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
-    style="background: linear-gradient(to top, #0d0d0d 0%, transparent 100%);"
+    class="pointer-events-none absolute bottom-0 left-0 right-0 h-40"
+    style="background: linear-gradient(to top, #090b10 0%, transparent 100%);"
   ></div>
 
   <!-- Content -->
-  <div class="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
+  <div class="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-5 md:gap-6">
 
     <!-- Title -->
     <h1
-      class="text-6xl md:text-7xl font-black tracking-tight leading-none"
+      class="text-6xl font-black leading-none tracking-tight md:text-7xl lg:text-8xl"
       style="font-family: 'Inter', sans-serif;"
     >
       <span class="text-white">Nex</span><span class="text-[#e74c3c]">ora</span>
     </h1>
 
     <!-- Subtitle -->
-    <p class="text-gray-400 text-base md:text-lg leading-relaxed max-w-lg">
+    <p class="max-w-2xl text-balance px-1 text-base leading-relaxed text-[#c3c5cb] md:text-lg lg:text-[1.38rem] lg:leading-relaxed">
       Conecta, investiga y trasciende dentro de la comunidad UTP. Una
       experiencia editorial de alto nivel para el académico moderno.
     </p>
 
     <!-- CTAs -->
-    <div class="flex flex-wrap items-center justify-center gap-3 mt-2">
+    <div class="mt-3 flex flex-wrap items-center justify-center gap-3 md:mt-4 md:gap-4">
       <a
         routerLink="/register"
-        class="inline-flex items-center gap-2 bg-[#c0392b] hover:bg-[#e74c3c] text-white text-xs font-bold tracking-[0.12em] uppercase px-6 py-3.5 rounded-lg transition-colors duration-200"
+        class="inline-flex min-w-[12.6rem] items-center justify-center rounded-xl bg-[#df3432] px-6 py-3.5 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors duration-200 hover:bg-[#ee4442] md:min-w-54"
       >
         Unirse al Nexo
       </a>
       <a
         routerLink="/explorar"
-        class="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-gray-300 hover:text-white text-xs font-bold tracking-[0.12em] uppercase px-6 py-3.5 rounded-lg transition-all duration-200"
+        class="inline-flex items-center gap-2 rounded-xl border border-white/15 px-6 py-3.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#d4d7de] transition-all duration-200 hover:border-white/35 hover:text-white"
       >
         Explorar Investigación
       </a>
@@ -50,7 +54,7 @@
 
     <!-- Scroll indicator -->
     <button
-      class="mt-6 flex flex-col items-center gap-1 text-gray-600 hover:text-gray-400 transition-colors duration-200"
+      class="mt-4 flex flex-col items-center gap-1 text-[#969ba8] transition-colors duration-200 hover:text-[#c9ced8] md:mt-6"
       (click)="scrollDown()"
       aria-label="Desplazar hacia abajo"
     >

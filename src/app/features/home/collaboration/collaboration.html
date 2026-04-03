@@ -1,22 +1,22 @@
-<section class="bg-[#0d0d0d] px-6 py-20 md:px-16">
+<section class="bg-[#090b11] px-4 py-16 md:px-10 md:py-20 lg:px-14 lg:py-24">
   <!-- Header -->
-  <div class="mb-12">
+  <div class="mx-auto mb-10 w-full max-w-6xl md:mb-12 lg:mb-14">
     <h2
-      class="text-3xl md:text-4xl font-bold text-white mb-3"
+      class="mb-3 text-3xl font-semibold text-white md:text-4xl lg:text-[2.6rem]"
       style="font-family: 'Inter', sans-serif"
     >
       Redefiniendo la Colaboración
     </h2>
-    <p class="text-gray-500 text-sm max-w-xs leading-relaxed">
+    <p class="max-w-md text-sm leading-relaxed text-[#989da9] md:text-[0.95rem]">
       Move beyond the noise. Focused environments for dedicated academic pursuit.
     </p>
   </div>
 
   <!-- Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 md:gap-5 lg:grid-cols-2 lg:gap-6">
     <!-- Card 1: Red Global -->
     <div
-      class="bg-[#141414] border border-white/[0.07] rounded-2xl p-7 flex flex-col gap-5 hover:border-white/[0.14] transition-colors duration-300"
+      class="flex flex-col gap-5 rounded-2xl border border-white/8 bg-[linear-gradient(150deg,rgba(56,58,67,0.74)_0%,rgba(34,35,44,0.58)_48%,rgba(20,20,26,0.8)_100%)] p-6 transition-colors duration-300 hover:border-white/16 md:p-7 lg:min-h-[17.8rem]"
     >
       <!-- Icon -->
       <div class="w-9 h-9 flex items-center justify-center">
@@ -36,18 +36,18 @@
         </svg>
       </div>
 
-      <div class="flex flex-col gap-2">
-        <h3 class="text-white font-semibold text-lg" style="font-family: 'Inter', sans-serif">
+      <div class="flex flex-col gap-2.5">
+        <h3 class="text-[1.95rem] font-medium leading-none text-[#f0f1f4] md:text-[2.05rem]" style="font-family: 'Inter', sans-serif">
           Red Global
         </h3>
-        <p class="text-gray-500 text-sm leading-relaxed">
+        <p class="max-w-md text-sm leading-relaxed text-[#b2b7c2] md:text-base">
           Conecta investigadores y profesores de todas las facultades. Encuentra una red académica
           más allá de los límites.
         </p>
       </div>
 
       <!-- Avatars -->
-      <div class="flex items-center gap-2 mt-auto">
+      <div class="mt-auto flex items-center gap-2 pt-2">
         <div class="flex -space-x-2">
           @for (avatar of avatars; track avatar.id) {
             <div
@@ -69,7 +69,7 @@
 
     <!-- Card 2: Intercambio de Investigación -->
     <div
-      class="bg-[#141414] border border-white/[0.07] rounded-2xl p-7 flex flex-col gap-5 hover:border-white/[0.14] transition-colors duration-300"
+      class="flex flex-col gap-5 rounded-2xl border border-white/8 bg-[#0b0d12] p-6 transition-colors duration-300 hover:border-white/16 md:p-7 lg:min-h-[17.8rem]"
     >
       <!-- Icon -->
       <div class="w-9 h-9 flex items-center justify-center">
@@ -89,21 +89,21 @@
         </svg>
       </div>
 
-      <div class="flex flex-col gap-2">
-        <h3 class="text-white font-semibold text-lg" style="font-family: 'Inter', sans-serif">
+      <div class="flex flex-col gap-2.5">
+        <h3 class="text-[1.75rem] font-medium leading-tight text-[#f0f1f4] md:text-[2rem]" style="font-family: 'Inter', sans-serif">
           Intercambio de Investigación
         </h3>
-        <p class="text-gray-500 text-sm leading-relaxed">
+        <p class="max-w-md text-sm leading-relaxed text-[#a5acb9] md:text-base">
           Un portal para compartir hallazgos, obtener retroalimentación y descubrir el siguiente
           gran avance en tu área.
         </p>
       </div>
 
       <!-- CTA link -->
-      <div class="mt-auto">
+      <div class="mt-auto pt-2">
         <a
           routerLink="/investigacion"
-          class="inline-flex items-center gap-1.5 text-xs font-bold tracking-[0.12em] uppercase text-[#e74c3c] hover:text-[#f1948a] transition-colors duration-200"
+          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[#f08f84] transition-colors duration-200 hover:text-[#f9b2ab]"
         >
           Publish Paper
           <svg
@@ -126,10 +126,10 @@
 
     <!-- Card 3: Vida Universitaria (full width) -->
     <div
-      class="md:col-span-2 bg-[#141414] border border-white/[0.07] rounded-2xl p-7 flex flex-col md:flex-row gap-8 items-center hover:border-white/[0.14] transition-colors duration-300 overflow-hidden relative"
+      class="relative overflow-hidden rounded-2xl border border-white/8 bg-[linear-gradient(118deg,#091b30_0%,#0f2d4d_52%,#0f2034_100%)] p-6 transition-colors duration-300 hover:border-white/16 md:col-span-2 md:p-8 lg:flex lg:min-h-[14.8rem] lg:items-center lg:gap-8"
     >
       <!-- Text -->
-      <div class="flex flex-col gap-4 flex-1 z-10">
+      <div class="z-10 flex flex-1 flex-col gap-4">
         <div class="w-9 h-9 flex items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -146,17 +146,17 @@
             />
           </svg>
         </div>
-        <h3 class="text-white font-semibold text-xl" style="font-family: 'Inter', sans-serif">
+        <h3 class="text-[2rem] font-medium leading-none text-white md:text-[2.35rem]" style="font-family: 'Inter', sans-serif">
           Vida Universitaria
         </h3>
-        <p class="text-gray-500 text-sm leading-relaxed max-w-sm">
+        <p class="max-w-md text-sm leading-relaxed text-[#ced5df] md:text-base">
           Eventos, clubs, debates y todo lo que la universidad tiene para ofrecer. Tu puerta a la
           vida fuera del aula.
         </p>
         <div class="mt-2">
           <a
             routerLink="/eventos"
-            class="inline-flex items-center gap-2 border border-white/20 hover:border-white/40 text-gray-300 hover:text-white text-xs font-bold tracking-[0.12em] uppercase px-4 py-2.5 rounded-lg transition-all duration-200"
+            class="inline-flex items-center gap-2 rounded-lg border border-white/35 bg-white px-4 py-2.5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0d1016] transition-all duration-200 hover:bg-transparent hover:text-white"
           >
             Discover Events
           </a>
@@ -164,25 +164,25 @@
       </div>
 
       <!-- Illustration placeholder -->
-      <div class="relative w-full md:w-80 h-44 shrink-0 flex items-end justify-center">
+      <div class="relative mt-5 flex h-44 w-full shrink-0 items-end justify-center md:mt-6 lg:mt-0 lg:w-88">
         <!-- Decorative ground line -->
-        <div class="absolute bottom-0 left-0 right-0 h-px bg-white/8"></div>
+        <div class="absolute bottom-0 left-4 right-4 h-3 rounded-full bg-[#f3f5f6]/80 blur-[1px]"></div>
         <!-- Glow -->
         <div
-          class="absolute bottom-0 left-1/2 -translate-x-1/2 w-64 h-24 rounded-full pointer-events-none"
-          style="background: radial-gradient(ellipse, rgba(192, 57, 43, 0.15) 0%, transparent 70%)"
+          class="pointer-events-none absolute bottom-1 left-1/2 h-24 w-64 -translate-x-1/2 rounded-full"
+          style="background: radial-gradient(ellipse, rgba(170, 220, 255, 0.35) 0%, transparent 72%)"
         ></div>
         <!-- Silhouette figures -->
-        <div class="flex items-end gap-3 pb-2 relative z-10">
+        <div class="relative z-10 flex items-end gap-3 pb-4 md:pb-3">
           @for (fig of figures; track fig.id) {
             <div class="flex flex-col items-center gap-1">
               <div
-                class="rounded-full bg-[#2a2a2a] border border-white/10"
+                class="rounded-full border border-white/15 bg-[#f1a15b]"
                 [style.width]="fig.size + 'px'"
                 [style.height]="fig.size + 'px'"
               ></div>
               <div
-                class="rounded-sm bg-[#2a2a2a] border border-white/10 w-8"
+                class="w-8 rounded-sm border border-white/10 bg-[#f6efe8]/90"
                 [style.height]="fig.bodyH + 'px'"
               ></div>
             </div>

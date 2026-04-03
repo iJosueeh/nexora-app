@@ -1,1 +1,54 @@
-<p>footer works!</p>
+<footer class="bg-[#0a0c11] px-4 pb-10 pt-10 md:px-10 md:pb-12 md:pt-12 lg:px-14 lg:pb-14">
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-10 border-t border-white/8 pt-8 md:gap-12 md:pt-10">
+    <div class="grid grid-cols-1 gap-10 md:grid-cols-[1.2fr_2fr] md:gap-12">
+      <div class="flex flex-col gap-5">
+        <a routerLink="/" class="text-base font-medium uppercase tracking-[0.06em] text-[#d5d8df]" style="font-family: 'Inter', sans-serif;">
+          UTPSCHOLAR
+        </a>
+
+        <p class="max-w-sm text-[0.62rem] uppercase tracking-[0.16em] text-[#777d8a] md:text-[0.64rem]">
+          © {{ currentYear }} UTP Scholar. The academic vanguard.
+        </p>
+
+        <div class="flex items-center gap-3">
+          @for (social of socials; track social.id) {
+            <a
+              [href]="social.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-[#8d93a1] transition-colors duration-200 hover:text-[#d6dae3]"
+              [attr.aria-label]="social.label"
+            >
+              <svg [attr.viewBox]="social.viewBox" fill="currentColor" class="h-3.5 w-3.5">
+                <path [attr.d]="social.path" />
+              </svg>
+            </a>
+          }
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:justify-items-end md:gap-10">
+        @for (col of columns; track col.id) {
+          <div class="flex min-w-29 flex-col gap-3">
+            <h4 class="text-[0.58rem] font-semibold uppercase tracking-[0.24em] text-[#9ea4b1]">
+              {{ col.title }}
+            </h4>
+
+            <ul class="flex flex-col gap-2">
+              @for (link of col.links; track link.label) {
+                <li>
+                  <a
+                    [routerLink]="link.path"
+                    class="text-[0.68rem] uppercase tracking-[0.12em] text-[#757c89] transition-colors duration-200 hover:text-[#d7dbe4]"
+                  >
+                    {{ link.label }}
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</footer>

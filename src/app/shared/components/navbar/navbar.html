@@ -1,128 +1,121 @@
 <nav
-  class="fixed top-0 left-0 right-0 z-50 flex items-center px-6 py-3 bg-[#0d0d0d]/80 backdrop-blur-md border-b border-white/6"
+  class="fixed left-0 right-0 top-0 z-50 border-b border-[#161b25] bg-[#06080d]/86 px-4 py-2.5 shadow-[inset_0_-1px_0_rgba(11,14,21,0.88)] backdrop-blur-md md:px-8 lg:px-12"
 >
-  <!-- Logo -->
-  <a
-    routerLink="/"
-    class="text-xl font-bold mr-10 shrink-0"
-    style="font-family: 'Inter', sans-serif"
-  >
-    <span class="text-white">Nex</span><span class="text-[#e74c3c]">ora</span>
-  </a>
-
-  <!-- Nav links -->
-  <ul class="hidden md:flex items-center gap-7 text-sm font-medium">
-    <li>
-      <a
-        routerLink="/funcionalidad"
-        routerLinkActive="text-white border-b border-white pb-0.5"
-        class="text-gray-400 hover:text-white transition-colors duration-200"
-      >
-        Funcionalidad
-      </a>
-    </li>
-    <li>
-      <a
-        routerLink="/comunidad"
-        routerLinkActive="text-white border-b border-white pb-0.5"
-        class="text-gray-400 hover:text-white transition-colors duration-200"
-      >
-        Comunidad
-      </a>
-    </li>
-    <li>
-      <a
-        routerLink="/testimonios"
-        routerLinkActive="text-white border-b border-white pb-0.5"
-        class="text-gray-400 hover:text-white transition-colors duration-200"
-      >
-        Testimonios
-      </a>
-    </li>
-    <li>
-      <a
-        routerLink="/guia-practica"
-        routerLinkActive="text-white border-b border-white pb-0.5"
-        class="text-gray-400 hover:text-white transition-colors duration-200"
-      >
-        Guía Práctica
-      </a>
-    </li>
-  </ul>
-
-  <!-- Right actions -->
-  <div class="ml-auto flex items-center gap-3">
-    <a
-      routerLink="/login"
-      class="hidden md:inline-block text-sm text-gray-400 hover:text-white transition-colors duration-200 px-3 py-1.5"
-    >
-      Iniciar Sesión
-    </a>
-    <a
-      routerLink="/register"
-      class="inline-flex items-center gap-2 bg-[#c0392b] hover:bg-[#e74c3c] text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded-lg transition-colors duration-200"
-    >
-      Únete al Nexo
+  <div class="mx-auto flex w-full max-w-352 items-center">
+    <!-- Logo -->
+    <a routerLink="/" class="mr-6 shrink-0 text-[0.82rem] font-medium uppercase tracking-[0.08em] text-[#f0f2f7] md:mr-10" style="font-family: 'Inter', sans-serif">
+      UTPSCHOLAR
     </a>
 
-    <!-- Mobile menu button -->
-    <button class="md:hidden flex flex-col gap-1.5 p-1" (click)="toggleMenu()" aria-label="Menú">
-      <span
-        class="block w-5 h-0.5 bg-gray-400 transition-all duration-200"
-        [class.rotate-45]="menuOpen"
-        [class.translate-y-2]="menuOpen"
-      ></span>
-      <span
-        class="block w-5 h-0.5 bg-gray-400 transition-all duration-200"
-        [class.opacity-0]="menuOpen"
-      ></span>
-      <span
-        class="block w-5 h-0.5 bg-gray-400 transition-all duration-200"
-        [class.-rotate-45]="menuOpen"
-        [class.-translate-y-2]="menuOpen"
-      ></span>
-    </button>
+    <!-- Nav links -->
+    <ul class="hidden items-center gap-6 lg:flex">
+      <li>
+        <a
+          routerLink="/funcionalidad"
+          routerLinkActive="text-[#f08f84] after:scale-x-100"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
+        >
+          Funcionalidad
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/comunidad"
+          routerLinkActive="text-[#f08f84] after:scale-x-100"
+          class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
+        >
+          Comunidad
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/testimonios"
+          routerLinkActive="text-[#f08f84] after:scale-x-100"
+          class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
+        >
+          Testimonios
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/guia-practica"
+          routerLinkActive="text-[#f08f84] after:scale-x-100"
+          class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
+        >
+          Sobre Nosotros
+        </a>
+      </li>
+    </ul>
+
+    <!-- Right actions -->
+    <div class="ml-auto flex items-center gap-2.5 md:gap-3">
+      <a
+        routerLink="/login"
+        class="hidden px-3 py-1.5 text-[0.74rem] font-medium text-[#979dab] transition-colors duration-200 hover:text-[#e3e7ee] md:inline-block"
+      >
+        Iniciar Sesión
+      </a>
+      <a
+        routerLink="/register"
+        class="inline-flex items-center rounded-md bg-[#df3432] px-3 py-2 text-[0.64rem] font-bold uppercase tracking-[0.13em] text-white transition-colors duration-200 hover:bg-[#ee4542] md:px-4"
+      >
+        Únete a la comunidad
+      </a>
+
+      <!-- Mobile menu button -->
+      <button class="flex p-1 lg:hidden" (click)="toggleMenu()" aria-label="Menú">
+        <span
+          class="relative block h-4 w-5"
+          aria-hidden="true"
+        >
+          <span class="absolute left-0 top-0 block h-0.5 w-5 bg-[#9ca2af] transition-all duration-200" [class.translate-y-[7px]]="menuOpen" [class.rotate-45]="menuOpen"></span>
+          <span class="absolute left-0 top-1.75 block h-0.5 w-5 bg-[#9ca2af] transition-all duration-200" [class.opacity-0]="menuOpen"></span>
+          <span class="absolute left-0 top-3.5 block h-0.5 w-5 bg-[#9ca2af] transition-all duration-200" [class.-translate-y-[7px]]="menuOpen" [class.-rotate-45]="menuOpen"></span>
+        </span>
+      </button>
+    </div>
   </div>
 
   <!-- Mobile menu -->
   @if (menuOpen) {
-    <div
-      class="absolute top-full left-0 right-0 bg-[#0d0d0d] border-b border-white/6 px-6 py-4 flex flex-col gap-4 md:hidden"
-    >
+    <div class="absolute left-0 right-0 top-full border-b border-white/8 bg-[#080a10] px-4 py-4 shadow-[0_22px_30px_rgba(0,0,0,0.45)] lg:hidden">
+      <div class="mx-auto flex w-full max-w-352 flex-col gap-4">
       <a
         routerLink="/funcionalidad"
         (click)="menuOpen = false"
-        class="text-sm text-gray-400 hover:text-white transition-colors"
+        class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]"
         >Funcionalidad</a
       >
       <a
         routerLink="/comunidad"
         (click)="menuOpen = false"
-        class="text-sm text-gray-400 hover:text-white transition-colors"
+        class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]"
         >Comunidad</a
       >
       <a
         routerLink="/testimonios"
         (click)="menuOpen = false"
-        class="text-sm text-gray-400 hover:text-white transition-colors"
+        class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]"
         >Testimonios</a
       >
       <a
         routerLink="/guia-practica"
         (click)="menuOpen = false"
-        class="text-sm text-gray-400 hover:text-white transition-colors"
-        >Guía Práctica</a
+        class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]"
+        >Sobre Nosotros</a
       >
       <hr class="border-white/6" />
       <a
         routerLink="/login"
         (click)="menuOpen = false"
-        class="text-sm text-gray-400 hover:text-white transition-colors"
+        class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]"
         >Iniciar Sesión</a
       >
+      </div>
     </div>
   }
 </nav>
 
 <!-- Spacer para compensar el fixed -->
-<div class="h-13"></div>
+<div class="h-12 bg-[#070a12] md:h-[3.35rem]"></div>
