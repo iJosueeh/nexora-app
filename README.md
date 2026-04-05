@@ -1,59 +1,100 @@
-# NexoraApp
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.5.
+<div align="center">
+	<h1>Nexora - Red Social Universitaria</h1>
+	<p>
+		<b>Red Social Universitaria para la UTP</b><br>
+		Plataforma web inspirada en Twitter, creada para estudiantes de la <br>
+		<b>Universidad Tecnológica del Perú</b>.<br>
+	</p>
+	<img src="https://img.shields.io/badge/Front--End-Angular-DD0031?logo=angular&logoColor=white"/>
+	<img src="https://img.shields.io/badge/Back--End-Spring%20Boot-6DB33F?logo=springboot&logoColor=white"/>
+	<img src="https://img.shields.io/badge/Status-En%20Desarrollo-yellow"/>
+</div>
 
-## Development server
+---
 
-To start a local development server, run:
+## 🚀 Descripción
 
-```bash
-ng serve
-```
+NexoraApp es una plataforma web tipo red social dirigida a estudiantes de la UTP. Permite:
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Publicar mensajes
+- Comentar publicaciones
+- Dar like
+- Compartir publicaciones
 
-## Code scaffolding
+Inspirada en la experiencia de Twitter, busca fomentar la interacción y colaboración entre la comunidad universitaria.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+---
 
-```bash
-ng generate component component-name
-```
+## 🛠️ Tecnologías
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
-```bash
-ng generate --help
-```
+<ul>
+	<li><b>Front-End:</b> <a href="https://angular.dev/">Angular</a> <img src="https://angular.io/assets/images/logos/angular/angular.svg" width="18"/></li>
+	<li><b>Back-End:</b> <a href="https://spring.io/projects/spring-boot">Spring Boot</a> <img src="https://spring.io/images/projects/spring-boot.svg" width="18"/></li>
+	<li><b>API:</b> <a href="https://graphql.org/">GraphQL</a> <img src="https://graphql.org/img/logo.svg" width="18"/></li>
+	<li><b>Base de datos:</b> <a href="https://www.postgresql.org/">PostgreSQL</a> <img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="18"/></li>
+</ul>
 
-## Building
+---
 
-To build the project run:
+## 📦 Instalación y uso
 
-```bash
-ng build
-```
+### Front-End (Angular)
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+1. Clona el repositorio y entra a la carpeta del proyecto:
+	 ```bash
+	 git clone [URL_DEL_REPO]
+	 cd nexora-app
+	 ```
+2. Instala las dependencias:
+	 ```bash
+	 npm install
+	 ```
+3. Inicia el servidor de desarrollo:
+	 ```bash
+	 ng serve
+	 ```
+4. Abre tu navegador en [http://localhost:4200](http://localhost:4200)
 
-## Running unit tests
+### Back-End (Spring Boot)
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Próximamente: El backend será desarrollado con Spring Boot y se integrará con el frontend para gestionar usuarios, publicaciones y más.
+
+---
+
+## 🧪 Testing
+
+Para ejecutar los tests unitarios del frontend:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
 
-```bash
-ng e2e
-```
+---
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 👥 Equipo de Desarrollo
 
-## Additional Resources
+- <b><a href="https://github.com/Crismar12">@Crismar12</a></b>
+- <b><a href="https://github.com/kath144">@kath144</a></b> (Katherine Salas)
+- <b><a href="https://github.com/KennySth">@KennySth</a></b>
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+
+
+## 💡 Funcionalidades Presentes
+
+- Perfil de usuario: cada usuario puede ver su perfil, publicaciones y multimedia.
+- Publicaciones con multimedia: imágenes, videos o archivos junto a los posts.
+- Likes y comentarios en publicaciones.
+- Visualización de publicaciones propias y de otros usuarios.
+- Integración con <b>GraphQL</b> para la gestión eficiente de datos.
+
+---
+
+## 📄 Licencia
+
+Proyecto académico para la UTP. Uso educativo.
