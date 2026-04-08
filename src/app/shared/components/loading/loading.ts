@@ -1,13 +1,18 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-loading',
+  standalone: true,
   imports: [],
   templateUrl: './loading.html',
   styleUrl: './loading.css',
 })
 export class Loading implements OnInit, OnDestroy {
   @Output() splashComplete = new EventEmitter<void>();
+
+  @Input() mode: 'splash' | 'spinner' = 'splash';
+  @Input() message = 'Cargando...';
+  @Input() fullscreen = true;
 
   progress = 0;
   statusMessage = 'Inicializando núcleo editorial...';
@@ -30,6 +35,8 @@ export class Loading implements OnInit, OnDestroy {
 
   private timeouts: ReturnType<typeof setTimeout>[] = [];
   private intervals: ReturnType<typeof setInterval>[] = [];
+  private readonly MIN_DISPLAY_DURATION = 400; // Minimum ms to display spinner to prevent flicker
+  private spinnerStartedAt = 0;
 
   private animateProgress(target: number, duration: number): void {
     const start = this.progress;
@@ -78,11 +85,32 @@ export class Loading implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (this.mode === 'spinner') {
+      this.spinnerStartedAt = Date.now();
+      this.isVisible = true;
+      return;
+    }
+
     this.runLoadingSequence();
   }
+
   ngOnDestroy(): void {
+    // For spinner mode, ensure minimum display time of 400ms to prevent flicker
+    if (this.mode === 'spinner' && this.spinnerStartedAt > 0) {
+      const elapsed = Date.now() - this.spinnerStartedAt;
+      const remainingDelay = this.MIN_DISPLAY_DURATION - elapsed;
+      if (remainingDelay > 0) {
+        setTimeout(() => {
+          this.cleanup();
+        }, remainingDelay);
+        return;
+      }
+    }
+    this.cleanup();
+  }
+
+  private cleanup(): void {
     this.timeouts.forEach((t) => clearTimeout(t));
     this.intervals.forEach((i) => clearInterval(i));
   }
-
 }
