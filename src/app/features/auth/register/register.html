@@ -1,0 +1,400 @@
+<div
+  class="min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#08090f] px-4 py-8 relative md:px-6 lg:px-8"
+>
+  @if (isLoading) {
+    <app-loading mode="spinner" [fullscreen]="true" [message]="loadingMessage"></app-loading>
+  }
+
+  <div
+    class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+    style="background-image: url('/assets/images/bg-login.webp')"
+  ></div>
+  <div
+    class="absolute inset-0 pointer-events-none"
+    style="
+      background: radial-gradient(
+        ellipse 75% 90% at 65% 45%,
+        rgba(10, 12, 18, 0.92) 0%,
+        rgba(6, 8, 13, 0.98) 65%,
+        transparent 100%
+      );
+    "
+  ></div>
+
+  <div
+    class="relative z-10 flex flex-col items-center gap-10 md:gap-12 w-full max-w-sm md:max-w-xl"
+  >
+    <div class="flex flex-col items-center gap-1.5">
+      <h1
+        class="text-4xl md:text-5xl font-black tracking-[0.04em] text-[#f08f84]"
+        style="font-family: 'Inter', sans-serif"
+      >
+        NEXORA
+      </h1>
+      <p
+        class="text-[0.6rem] md:text-[0.65rem] font-medium tracking-[0.28em] text-[#9da4b1] uppercase"
+      >
+        Vanguardia Académica
+      </p>
+    </div>
+
+    <div class="relative z-10 w-full flex flex-col gap-6 md:gap-7">
+      <div class="flex gap-3 w-full border-b border-white/8 pb-4">
+        <button
+          (click)="goToLogin()"
+          class="flex-1 px-4 py-2 text-xs md:text-sm font-semibold rounded-t-lg border-b-2 transition-all duration-300 border-transparent text-[#8f95a3] hover:text-[#a9afbc]"
+          type="button"
+        >
+          Iniciar sesión
+        </button>
+        <button
+          class="flex-1 px-4 py-2 text-xs md:text-sm font-semibold rounded-t-lg border-b-2 transition-all duration-300 border-[#df3432] text-[#f2f4f8]"
+          type="button"
+        >
+          Registrarse
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <h2
+          class="text-2xl md:text-3xl font-semibold text-[#f2f4f8]"
+          style="font-family: 'Inter', sans-serif; line-height: 1.2"
+        >
+          Crea tu perfil académico
+        </h2>
+        <p class="text-[#8f95a3] text-xs md:text-sm">
+          Completa tu registro por etapas para una experiencia más clara.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 md:gap-3">
+        @for (stepLabel of stepLabels; track stepLabel; let idx = $index) {
+          <button
+            type="button"
+            (click)="goToStep(idx + 1)"
+            class="px-2.5 py-2 rounded-lg border text-[0.65rem] md:text-xs font-semibold tracking-[0.08em] uppercase transition-all duration-200"
+            [class.border-[#df3432]]="currentStep === idx + 1"
+            [class.text-white]="currentStep === idx + 1"
+            [class.bg-[#181d27]]="currentStep === idx + 1"
+            [class.border-white/10]="currentStep !== idx + 1"
+            [class.text-[#8f95a3]]="currentStep !== idx + 1"
+          >
+            {{ idx + 1 }}. {{ stepLabel }}
+          </button>
+        }
+      </div>
+
+      @if (hasActiveDraft()) {
+        <div
+          class="flex items-center justify-between rounded-lg border border-white/10 bg-[#0f1219] px-3 py-2"
+        >
+          <p class="text-[0.65rem] md:text-xs tracking-[0.08em] uppercase text-[#9da4b1]">
+            Borrador activo
+          </p>
+          <p class="text-xs md:text-sm font-semibold text-[#f2f4f8]">
+            Expira en {{ draftTimeLeftLabel() }}
+          </p>
+        </div>
+      }
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6"
+        [appAutosavetrigger]="triggerDraftSave"
+      >
+        @if (currentStep === 1) {
+          <div class="md:col-span-2 flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Correo
+            </label>
+            <div
+              class="flex items-center gap-3 bg-[#0f1219] border border-white/10 rounded-xl px-3.5 py-2.5 md:py-3 focus-within:border-white/25 focus-within:bg-[#131820] transition-all duration-200"
+            >
+              <input
+                type="email"
+                placeholder="username@utp.edu.pe"
+                [(ngModel)]="email"
+                class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
+              />
+            </div>
+            @if (hasTypedEmail && !isUtpEmailValid) {
+              <p class="text-[0.7rem] text-[#f08f84]">
+                Usa un correo institucional válido con dominio @utp.edu.pe.
+              </p>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Contraseña
+            </label>
+            <div
+              class="flex items-center gap-3 bg-[#0f1219] border border-white/10 rounded-xl px-3.5 py-2.5 md:py-3 focus-within:border-white/25 focus-within:bg-[#131820] transition-all duration-200"
+            >
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="········"
+                [(ngModel)]="password"
+                class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
+              />
+              <button
+                (click)="showPassword = !showPassword"
+                class="text-[#5a6270] hover:text-[#7a8196] transition-colors duration-200"
+                type="button"
+              >
+                @if (showPassword) {
+                  <span class="text-xs">Ocultar</span>
+                } @else {
+                  <span class="text-xs">Mostrar</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Confirmar contraseña
+            </label>
+            <div
+              class="flex items-center gap-3 bg-[#0f1219] border border-white/10 rounded-xl px-3.5 py-2.5 md:py-3 focus-within:border-white/25 focus-within:bg-[#131820] transition-all duration-200"
+            >
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                placeholder="········"
+                [(ngModel)]="confirmPassword"
+                class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
+              />
+              <button
+                (click)="showConfirmPassword = !showConfirmPassword"
+                class="text-[#5a6270] hover:text-[#7a8196] transition-colors duration-200"
+                type="button"
+              >
+                @if (showConfirmPassword) {
+                  <span class="text-xs">Ocultar</span>
+                } @else {
+                  <span class="text-xs">Mostrar</span>
+                }
+              </button>
+            </div>
+            @if (passwordsDoNotMatch) {
+              <p class="text-[0.7rem] text-[#f08f84]">Las contraseñas no coinciden.</p>
+            }
+          </div>
+        }
+
+        @if (currentStep === 2) {
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Usuario
+            </label>
+            <div
+              class="flex items-center gap-3 bg-[#0f1219] border border-white/10 rounded-xl px-3.5 py-2.5 md:py-3 focus-within:border-white/25 focus-within:bg-[#131820] transition-all duration-200"
+            >
+              <input
+                type="text"
+                placeholder="nexora_usuario"
+                [(ngModel)]="username"
+                class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
+              />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Nombre completo
+            </label>
+            <div
+              class="flex items-center gap-3 bg-[#0f1219] border border-white/10 rounded-xl px-3.5 py-2.5 md:py-3 focus-within:border-white/25 focus-within:bg-[#131820] transition-all duration-200"
+            >
+              <input
+                type="text"
+                placeholder="Tu nombre"
+                [(ngModel)]="fullName"
+                class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
+              />
+            </div>
+          </div>
+
+          <div class="md:col-span-2 flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Biografía
+            </label>
+            <div
+              class="flex items-start gap-3 bg-[#0f1219] border border-white/10 rounded-xl px-3.5 py-2.5 focus-within:border-white/25 focus-within:bg-[#131820] transition-all duration-200"
+            >
+              <textarea
+                rows="3"
+                placeholder="Cuéntanos tu enfoque académico..."
+                [(ngModel)]="bio"
+                class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none resize-none"
+              ></textarea>
+            </div>
+          </div>
+        }
+
+        @if (currentStep === 3) {
+          <div class="md:col-span-2 flex flex-col gap-2">
+            <label
+              class="text-[0.6rem] md:text-[0.65rem] font-semibold tracking-[0.12em] uppercase text-[#8f95a3]"
+            >
+              Intereses académicos
+            </label>
+            <div class="flex flex-wrap gap-2">
+              @for (interest of interests; track interest) {
+                <button
+                  type="button"
+                  (click)="toggleInterest(interest)"
+                  class="px-3 py-2 rounded-lg text-xs md:text-sm transition-all duration-200 border"
+                  [class.bg-[#df3432]]="selectedInterests.includes(interest)"
+                  [class.text-white]="selectedInterests.includes(interest)"
+                  [class.border-[#df3432]]="selectedInterests.includes(interest)"
+                  [class.bg-[#0f1219]]="!selectedInterests.includes(interest)"
+                  [class.text-[#b9c0cd]]="!selectedInterests.includes(interest)"
+                  [class.border-white/10]="!selectedInterests.includes(interest)"
+                >
+                  {{ interest }}
+                </button>
+              }
+            </div>
+            @if (selectedInterests.length === 0) {
+              <p class="text-[0.7rem] text-[#f08f84]">Selecciona al menos un interés.</p>
+            }
+          </div>
+
+          <div class="md:col-span-2 flex flex-col gap-3">
+            <label class="flex items-center gap-3 cursor-pointer group py-1">
+              <div
+                class="w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 shrink-0"
+                [class.bg-[#df3432]]="isActive"
+                [class.border-[#df3432]]="isActive"
+                [class.border-white/25]="!isActive"
+                [class.bg-transparent]="!isActive"
+                (click)="toggleIsActive()"
+              >
+                @if (isActive) {
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    class="w-3 h-3"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                }
+              </div>
+              <span
+                class="text-[0.75rem] md:text-[0.8rem] text-[#8f95a3] group-hover:text-[#a9afbc] transition-colors duration-200"
+              >
+                Crear cuenta activa inmediatamente.
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3 cursor-pointer group py-1">
+              <div
+                class="w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 shrink-0"
+                [class.bg-[#df3432]]="acceptedTerms"
+                [class.border-[#df3432]]="acceptedTerms"
+                [class.border-white/25]="!acceptedTerms"
+                [class.bg-transparent]="!acceptedTerms"
+                (click)="toggleAcceptedTerms()"
+              >
+                @if (acceptedTerms) {
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    class="w-3 h-3"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                }
+              </div>
+              <span
+                class="text-[0.75rem] md:text-[0.8rem] text-[#8f95a3] group-hover:text-[#a9afbc] transition-colors duration-200"
+              >
+                Acepto términos y políticas de la plataforma.
+              </span>
+            </label>
+            @if (!acceptedTerms) {
+              <p class="text-[0.7rem] text-[#f08f84]">Debes aceptar los términos para finalizar.</p>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center justify-between gap-3 mt-1">
+        <button
+          type="button"
+          (click)="prevStep()"
+          class="px-4 py-2.5 rounded-xl border border-white/15 text-[#b9c0cd] text-xs md:text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-200 disabled:opacity-35 disabled:cursor-not-allowed"
+          [disabled]="currentStep === 1"
+        >
+          Anterior
+        </button>
+
+        @if (currentStep < stepLabels.length) {
+          <button
+            type="button"
+            (click)="nextStep()"
+            class="px-4 py-2.5 rounded-xl bg-[#df3432] hover:bg-[#ee4542] text-white text-xs md:text-sm font-bold uppercase tracking-[0.12em] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            [disabled]="!isCurrentStepValid"
+          >
+            Siguiente
+          </button>
+        } @else {
+          <button
+            (click)="onRegister()"
+            [disabled]="isLoading || !isFormValid"
+            type="button"
+            class="px-4 py-2.5 rounded-xl bg-[#df3432] hover:bg-[#ee4542] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs md:text-sm tracking-[0.12em] uppercase transition-colors duration-200"
+          >
+            @if (isLoading) {
+              <svg
+                class="animate-spin w-4 h-4 inline-block mr-1"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                ></path>
+              </svg>
+              Creando...
+            } @else {
+              Crear cuenta
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
