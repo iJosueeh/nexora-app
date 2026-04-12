@@ -46,11 +46,14 @@
             type="button"
             (click)="goToStep(idx + 1)"
             class="px-2.5 py-2 rounded-lg border text-[0.65rem] md:text-xs font-semibold tracking-[0.08em] uppercase transition-all duration-200"
+            [disabled]="isLoading() || (showEmailInboxGuide() && idx > 0)"
             [class.border-[#df3432]]="currentStep() === idx + 1"
             [class.text-white]="currentStep() === idx + 1"
             [class.bg-[#181d27]]="currentStep() === idx + 1"
             [class.border-white/10]="currentStep() !== idx + 1"
             [class.text-[#8f95a3]]="currentStep() !== idx + 1"
+            [class.disabled:opacity-45]="isLoading() || (showEmailInboxGuide() && idx > 0)"
+            [class.disabled:cursor-not-allowed]="isLoading() || (showEmailInboxGuide() && idx > 0)"
             [attr.aria-current]="currentStep() === idx + 1 ? 'step' : null"
           >
             {{ idx + 1 }}. {{ label }}
@@ -68,7 +71,17 @@
       <form [formGroup]="form" (ngSubmit)="nextStep()" class="grid gap-5 md:gap-6">
         @switch (currentStep()) {
           @case (1) {
-            <app-register-account-step [form]="accountForm"></app-register-account-step>
+            @if (showEmailInboxGuide()) {
+              <app-register-email-check-step
+                [email]="accountForm.controls.email.value"
+                [isResending]="isResendingEmail()"
+                (continueStep)="onEmailGuideContinue()"
+                (editEmail)="onEmailGuideEdit()"
+                (resendEmail)="onResendValidationEmail()"
+              ></app-register-email-check-step>
+            } @else {
+              <app-register-account-step [form]="accountForm"></app-register-account-step>
+            }
           }
           @case (2) {
             <app-register-identity-step [form]="identityForm" [careerOptions]="careerOptions()"></app-register-identity-step>
@@ -78,24 +91,26 @@
           }
         }
 
-        <div class="flex items-center justify-between gap-3 mt-1">
-          <button
-            type="button"
-            (click)="prevStep()"
-            class="px-4 py-2.5 rounded-xl border border-white/15 text-[#b9c0cd] text-xs md:text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-200 disabled:opacity-35 disabled:cursor-not-allowed"
-            [disabled]="backDisabled()"
-          >
-            Anterior
-          </button>
+        @if (!(currentStep() === 1 && showEmailInboxGuide())) {
+          <div class="flex items-center justify-between gap-3 mt-1">
+            <button
+              type="button"
+              (click)="prevStep()"
+              class="px-4 py-2.5 rounded-xl border border-white/15 text-[#b9c0cd] text-xs md:text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-200 disabled:opacity-35 disabled:cursor-not-allowed"
+              [disabled]="backDisabled()"
+            >
+              Anterior
+            </button>
 
-          <button
-            type="submit"
-            class="px-4 py-2.5 rounded-xl bg-[#df3432] hover:bg-[#ee4542] text-white text-xs md:text-sm font-bold uppercase tracking-[0.12em] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            [disabled]="isLoading() || !isCurrentStepValid()"
-          >
-            {{ primaryActionLabel() }}
-          </button>
-        </div>
+            <button
+              type="submit"
+              class="px-4 py-2.5 rounded-xl bg-[#df3432] hover:bg-[#ee4542] text-white text-xs md:text-sm font-bold uppercase tracking-[0.12em] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              [disabled]="isLoading() || !isCurrentStepValid()"
+            >
+              {{ primaryActionLabel() }}
+            </button>
+          </div>
+        }
       </form>
     </div>
 

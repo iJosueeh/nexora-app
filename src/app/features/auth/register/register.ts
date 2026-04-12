@@ -11,6 +11,7 @@ import { Loading } from '../../../shared/components/loading/loading';
 import { LOADING_MESSAGES } from '../../../shared/constants/loading-messages';
 import { AuthApiService } from '../services/auth-api.service';
 import { RegisterAccountStep } from './components/register-account-step/register-account-step';
+import { RegisterEmailCheckStep } from './components/register-email-check-step/register-email-check-step';
 import { RegisterIdentityStep } from './components/register-identity-step/register-identity-step';
 import { RegisterPreferencesStep } from './components/register-preferences-step/register-preferences-step';
 import { RegisterDraftStorageService } from './services/register-draft-storage.service';
@@ -27,7 +28,14 @@ type RegisterStep = 1 | 2 | 3;
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, Loading, RegisterAccountStep, RegisterIdentityStep, RegisterPreferencesStep],
+  imports: [
+    ReactiveFormsModule,
+    Loading,
+    RegisterAccountStep,
+    RegisterEmailCheckStep,
+    RegisterIdentityStep,
+    RegisterPreferencesStep,
+  ],
   templateUrl: './register.html',
   styleUrl: './register.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,6 +71,8 @@ export class Register {
 
   readonly currentStep = signal<RegisterStep>(1);
   readonly isLoading = signal(false);
+  readonly isResendingEmail = signal(false);
+  readonly showEmailInboxGuide = signal(false);
   readonly loadingMessage = computed(() => {
     switch (this.currentStep()) {
       case 1:
@@ -152,6 +162,11 @@ export class Register {
   nextStep(): void {
     switch (this.currentStep()) {
       case 1:
+        if (this.showEmailInboxGuide()) {
+          this.onEmailGuideContinue();
+          return;
+        }
+
         this.submitAccountStep();
         return;
       case 2:
@@ -163,6 +178,12 @@ export class Register {
   }
 
   prevStep(): void {
+    if (this.currentStep() === 1 && this.showEmailInboxGuide()) {
+      this.showEmailInboxGuide.set(false);
+      this.queueDraftSave();
+      return;
+    }
+
     const previousStep = this.registerStepFlow.prevStep(this.currentStep());
     if (previousStep === this.currentStep()) return;
 
@@ -171,6 +192,10 @@ export class Register {
   }
 
   goToStep(step: number): void {
+    if (this.currentStep() === 1 && this.showEmailInboxGuide() && step > 1) {
+      return;
+    }
+
     const resolvedStep = this.registerStepFlow.resolveStep(
       step,
       this.currentStep(),
@@ -188,7 +213,7 @@ export class Register {
   isCurrentStepValid(): boolean {
     switch (this.currentStep()) {
       case 1:
-        return this.accountForm.valid;
+        return this.showEmailInboxGuide() || this.accountForm.valid;
       case 2:
         return this.identityForm.valid;
       default:
@@ -218,12 +243,47 @@ export class Register {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: () => {
-          this.currentStep.set(2);
+          this.showEmailInboxGuide.set(true);
           this.queueDraftSave();
-          this.toastr.success('Validamos tu correo institucional. Continúa con tu identidad.', 'Paso 1 completado');
+          this.toastr.success('Revisa tu correo para validar la cuenta y continuar.', 'Correo enviado');
         },
         error: () => {
           this.toastr.error('No se pudo validar el correo. Intenta nuevamente.', 'Registro detenido');
+        },
+      });
+  }
+
+  onEmailGuideContinue(): void {
+    this.showEmailInboxGuide.set(false);
+    this.currentStep.set(2);
+    this.queueDraftSave();
+  }
+
+  onEmailGuideEdit(): void {
+    this.showEmailInboxGuide.set(false);
+    this.queueDraftSave();
+  }
+
+  onResendValidationEmail(): void {
+    if (this.accountForm.invalid || this.isResendingEmail()) {
+      return;
+    }
+
+    const payload: RegisterStartRequest = {
+      email: this.accountForm.controls.email.value.trim(),
+      password: this.accountForm.controls.password.value,
+    };
+
+    this.isResendingEmail.set(true);
+    this.authApi
+      .startRegistration(payload)
+      .pipe(finalize(() => this.isResendingEmail.set(false)))
+      .subscribe({
+        next: () => {
+          this.toastr.success('Te reenviamos el correo de verificación.', 'Correo reenviado');
+        },
+        error: () => {
+          this.toastr.error('No se pudo reenviar el correo. Intenta nuevamente.', 'Error');
         },
       });
   }
@@ -341,6 +401,7 @@ export class Register {
 
     const maxStep = this.stepLabels.length;
     this.currentStep.set(Math.min(Math.max(draft.currentStep, 1), maxStep) as RegisterStep);
+    this.showEmailInboxGuide.set(draft.isEmailGuideVisible && draft.currentStep === 1);
     this.draftExpiresAt.set(draft.expiresAt);
     this.updateDraftRemainingMs();
 
@@ -356,6 +417,7 @@ export class Register {
         email: raw.account.email,
         password: raw.account.password,
         confirmPassword: raw.account.confirmPassword,
+        isEmailGuideVisible: this.showEmailInboxGuide(),
         firstName: raw.identity.firstName,
         lastName: raw.identity.lastName,
         career: raw.identity.career,
@@ -421,6 +483,7 @@ export class Register {
     this.form.markAsPristine();
     this.form.markAsUntouched();
     this.currentStep.set(1);
+    this.showEmailInboxGuide.set(false);
   }
 
   private markGroupTouched(group: AbstractControl): void {

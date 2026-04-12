@@ -27,6 +27,7 @@ export class RegisterDraftStorageService {
         email: this.getString(record, 'email'),
         password: this.getString(record, 'password'),
         confirmPassword: this.getString(record, 'confirmPassword'),
+        isEmailGuideVisible: this.getBoolean(record, 'isEmailGuideVisible', false),
         firstName: this.resolveFirstName(record),
         lastName: this.resolveLastName(record),
         career: this.getString(record, 'career'),
