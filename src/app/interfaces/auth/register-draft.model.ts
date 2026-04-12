@@ -2,8 +2,9 @@ export interface RegisterDraft {
 	email: string;
 	password: string;
 	confirmPassword: string;
-	username: string;
-	fullName: string;
+	firstName: string;
+	lastName: string;
+	career: string;
 	bio: string;
 	selectedInterests: string[];
 	isActive: boolean;

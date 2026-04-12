@@ -1,0 +1,90 @@
+<section [formGroup]="form()" class="grid gap-5">
+  <div class="space-y-3">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Intereses académicos</label>
+    <div class="flex flex-wrap gap-2">
+      @for (interest of interestOptions(); track interest) {
+        <button
+          type="button"
+          (click)="toggleInterest(interest)"
+          class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-all duration-200"
+          [class.border-[#ff4d4d]]="isInterestSelected(interest)"
+          [class.bg-[#ff4d4d]]="isInterestSelected(interest)"
+          [class.text-white]="isInterestSelected(interest)"
+          [class.border-white/10]="!isInterestSelected(interest)"
+          [class.bg-[#111520]]="!isInterestSelected(interest)"
+          [class.text-[#c0c6d2]]="!isInterestSelected(interest)"
+          [attr.aria-pressed]="isInterestSelected(interest)"
+        >
+          {{ interest }}
+        </button>
+      }
+    </div>
+    @if (isInvalid(selectedInterestsControl)) {
+      <p class="text-xs text-[#ff8a8a]">Selecciona al menos un interés académico.</p>
+    }
+  </div>
+
+  <div class="space-y-2">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Bio</label>
+    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(bioControl)" [class.border-white/10]="!isInvalid(bioControl)">
+      <textarea
+        formControlName="bio"
+        rows="4"
+        maxlength="280"
+        placeholder="Cuéntale a la comunidad qué te interesa investigar o construir"
+        class="w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-[#596275]"
+        [attr.aria-invalid]="isInvalid(bioControl)"
+      ></textarea>
+    </div>
+    <div class="flex items-center justify-between text-xs text-[#8a92a3]">
+      <span>Máximo 280 caracteres.</span>
+      <span>{{ bioControl?.value?.length ?? 0 }}/280</span>
+    </div>
+  </div>
+
+  <div class="grid gap-3 sm:grid-cols-2">
+    <button
+      type="button"
+      (click)="toggleIsActive()"
+      class="flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition-all duration-200"
+      [class.border-[#ff4d4d]]="isActiveControl?.value"
+      [class.bg-[#140f10]]="isActiveControl?.value"
+      [class.text-white]="isActiveControl?.value"
+      [class.border-white/10]="!isActiveControl?.value"
+      [class.bg-[#111520]]="!isActiveControl?.value"
+      [class.text-[#c0c6d2]]="!isActiveControl?.value"
+    >
+      <span>
+        <span class="block text-sm font-semibold">Cuenta activa</span>
+        <span class="block text-xs text-inherit/70">Disponible desde el primer día</span>
+      </span>
+      <span class="rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em]" [class.border-[#ff4d4d]]="isActiveControl?.value" [class.bg-[#ff4d4d]]="isActiveControl?.value" [class.border-white/10]="!isActiveControl?.value">
+        {{ isActiveControl?.value ? 'Sí' : 'No' }}
+      </span>
+    </button>
+
+    <button
+      type="button"
+      (click)="toggleAcceptedTerms()"
+      class="flex items-center justify-between rounded-2xl border px-4 py-4 text-left transition-all duration-200"
+      [class.border-[#ff4d4d]]="acceptedTermsControl?.value"
+      [class.bg-[#140f10]]="acceptedTermsControl?.value"
+      [class.text-white]="acceptedTermsControl?.value"
+      [class.border-white/10]="!acceptedTermsControl?.value"
+      [class.bg-[#111520]]="!acceptedTermsControl?.value"
+      [class.text-[#c0c6d2]]="!acceptedTermsControl?.value"
+    >
+      <span>
+        <span class="block text-sm font-semibold">Acepto términos</span>
+        <span class="block text-xs text-inherit/70">Necesario para finalizar el registro</span>
+      </span>
+      <span class="rounded-full border px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.16em]" [class.border-[#ff4d4d]]="acceptedTermsControl?.value" [class.bg-[#ff4d4d]]="acceptedTermsControl?.value" [class.border-white/10]="!acceptedTermsControl?.value">
+        {{ acceptedTermsControl?.value ? 'Sí' : 'No' }}
+      </span>
+    </button>
+  </div>
+
+  @if (isInvalid(acceptedTermsControl)) {
+    <p class="text-xs text-[#ff8a8a]">Debes aceptar los términos para continuar.</p>
+  }
+</section>

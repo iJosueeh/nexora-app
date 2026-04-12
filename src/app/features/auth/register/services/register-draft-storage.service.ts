@@ -27,8 +27,9 @@ export class RegisterDraftStorageService {
         email: this.getString(record, 'email'),
         password: this.getString(record, 'password'),
         confirmPassword: this.getString(record, 'confirmPassword'),
-        username: this.getString(record, 'username'),
-        fullName: this.getString(record, 'fullName'),
+        firstName: this.resolveFirstName(record),
+        lastName: this.resolveLastName(record),
+        career: this.getString(record, 'career'),
         bio: this.getString(record, 'bio'),
         selectedInterests: this.getStringArray(record, 'selectedInterests'),
         isActive: this.getBoolean(record, 'isActive', true),
@@ -84,6 +85,36 @@ export class RegisterDraftStorageService {
   private getNumber(record: Record<string, unknown>, key: string, fallback: number): number {
     const value = record[key];
     return typeof value === 'number' ? value : fallback;
+  }
+
+  private resolveFirstName(record: Record<string, unknown>): string {
+    const firstName = this.getString(record, 'firstName');
+    if (firstName) return firstName;
+
+    const fullName = this.getString(record, 'fullName');
+    if (fullName) return this.splitFullName(fullName).firstName;
+
+    const username = this.getString(record, 'username');
+    return this.splitFullName(username).firstName;
+  }
+
+  private resolveLastName(record: Record<string, unknown>): string {
+    const lastName = this.getString(record, 'lastName');
+    if (lastName) return lastName;
+
+    const fullName = this.getString(record, 'fullName');
+    if (fullName) return this.splitFullName(fullName).lastName;
+
+    const username = this.getString(record, 'username');
+    return this.splitFullName(username).lastName;
+  }
+
+  private splitFullName(value: string): { firstName: string; lastName: string } {
+    const [firstName = '', ...rest] = value.trim().split(/\s+/);
+    return {
+      firstName,
+      lastName: rest.join(' '),
+    };
   }
 
   private readStoredExpiresAt(): number | null {

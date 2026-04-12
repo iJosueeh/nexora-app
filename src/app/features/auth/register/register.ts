@@ -1,59 +1,116 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, finalize, interval } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+
+import { AuthSession } from '../../../core/services/auth-session';
+import { RegisterIdentityRequest, RegisterPreferencesRequest, RegisterStartRequest } from '../../../interfaces/auth';
 import { Loading } from '../../../shared/components/loading/loading';
 import { LOADING_MESSAGES } from '../../../shared/constants/loading-messages';
-import { RegisterDraftStorageService } from './services/register-draft-storage.service';
-import {
-  hasPasswordMismatch,
-  isStep1Valid,
-  isStep2Valid,
-  isStep3Valid,
-  isUtpEmail,
-  type RegisterValidationSnapshot,
-} from './utils/register-validation.util';
-import { AutosaveTriggerDirective } from './directives/autosave-trigger.directive';
-import { RegisterStepFlowService } from './services/register-step-flow.service';
 import { AuthApiService } from '../services/auth-api.service';
+import { RegisterAccountStep } from './components/register-account-step/register-account-step';
+import { RegisterIdentityStep } from './components/register-identity-step/register-identity-step';
+import { RegisterPreferencesStep } from './components/register-preferences-step/register-preferences-step';
+import { RegisterDraftStorageService } from './services/register-draft-storage.service';
+import { RegisterStepFlowService } from './services/register-step-flow.service';
+import {
+  buildFullName,
+  buildUsername,
+  minSelectedInterestsValidator,
+  passwordsMatchValidator,
+  utpEmailValidator,
+} from './utils/register-validation.util';
+
+type RegisterStep = 1 | 2 | 3;
 
 @Component({
   selector: 'app-register',
-  imports: [FormsModule, AutosaveTriggerDirective, Loading],
+  imports: [ReactiveFormsModule, Loading, RegisterAccountStep, RegisterIdentityStep, RegisterPreferencesStep],
   templateUrl: './register.html',
   styleUrl: './register.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Register {
-  readonly stepLabels = ['Cuenta', 'Perfil', 'Preferencias'];
-  readonly interests = [
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly toastr = inject(ToastrService);
+  private readonly authApi = inject(AuthApiService);
+  private readonly authSession = inject(AuthSession);
+  private readonly registerDraftStorage = inject(RegisterDraftStorageService);
+  private readonly registerStepFlow = inject(RegisterStepFlowService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly draftSave$ = new Subject<void>();
+
+  readonly stepLabels = ['Cuenta', 'Identidad', 'Preferencias'] as const;
+  readonly careerOptions = signal([
+    'Ingeniería de Sistemas e Informática',
+    'Ingeniería de Software',
+    'Ingeniería Industrial',
+    'Arquitectura',
+    'Administración y Negocios Internacionales',
+    'Comunicación y Marketing',
+  ]);
+  readonly interestOptions = signal([
     'IA',
     'Ciberseguridad',
     'Data Science',
     'Cloud',
     'Robótica',
     'Matemática Aplicada',
-  ];
+  ]);
 
-  email = '';
-  password = '';
-  confirmPassword = '';
-  username = '';
-  fullName = '';
-  bio = '';
-  selectedInterests: string[] = [];
-  isActive = true;
-  acceptedTerms = false;
+  readonly currentStep = signal<RegisterStep>(1);
+  readonly isLoading = signal(false);
+  readonly loadingMessage = computed(() => {
+    switch (this.currentStep()) {
+      case 1:
+        return LOADING_MESSAGES.AUTH.REGISTER_STARTING;
+      case 2:
+        return LOADING_MESSAGES.AUTH.REGISTER_PROFILE;
+      default:
+        return LOADING_MESSAGES.AUTH.REGISTER_COMPLETING;
+    }
+  });
 
-  showPassword = false;
-  showConfirmPassword = false;
-  isLoading = false;
-  currentStep = 1;
-  draftExpiresAt = signal(0);
-  draftRemainingMs = signal(0);
+  readonly form = this.fb.group({
+    account: this.fb.group(
+      {
+        email: this.fb.nonNullable.control('', {
+          validators: [Validators.required, Validators.email, utpEmailValidator],
+        }),
+        password: this.fb.nonNullable.control('', {
+          validators: [Validators.required, Validators.minLength(8)],
+        }),
+        confirmPassword: this.fb.nonNullable.control('', {
+          validators: [Validators.required],
+        }),
+      },
+      { validators: [passwordsMatchValidator] }
+    ),
+    identity: this.fb.group({
+      firstName: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(2)]),
+      lastName: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(2)]),
+      career: this.fb.nonNullable.control('', [Validators.required]),
+    }),
+    preferences: this.fb.group({
+      bio: this.fb.nonNullable.control('', [Validators.maxLength(280)]),
+      selectedInterests: this.fb.nonNullable.control<string[]>([], {
+        validators: [minSelectedInterestsValidator(1)],
+      }),
+      isActive: this.fb.nonNullable.control(true),
+      acceptedTerms: this.fb.nonNullable.control(false, [Validators.requiredTrue]),
+    }),
+  });
+
+  readonly accountForm = this.form.controls.account;
+  readonly identityForm = this.form.controls.identity;
+  readonly preferencesForm = this.form.controls.preferences;
+
+  readonly draftExpiresAt = signal(0);
+  readonly draftRemainingMs = signal(0);
   readonly hasActiveDraft = computed(() => this.draftRemainingMs() > 0);
-  readonly triggerDraftSave = () => this.queueDraftSave();
   readonly draftTimeLeftLabel = computed(() => {
     if (!this.hasActiveDraft()) return '00:00';
 
@@ -66,174 +123,225 @@ export class Register {
     return `${minutes}:${seconds}`;
   });
 
-  private readonly registerDraftStorage = inject(RegisterDraftStorageService);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly toastr = inject(ToastrService);
-  private readonly registerStepFlow = inject(RegisterStepFlowService);
-  private readonly authApi = inject(AuthApiService);
-  private readonly draftSave$ = new Subject<void>();
-  readonly loadingMessage = LOADING_MESSAGES.AUTH.REGISTER_CREATING;
+  readonly primaryActionLabel = computed(() => {
+    switch (this.currentStep()) {
+      case 1:
+        return 'Validar correo';
+      case 2:
+        return 'Guardar identidad';
+      default:
+        return 'Finalizar registro';
+    }
+  });
 
-  constructor(private router: Router) {}
+  readonly backDisabled = computed(() => this.currentStep() === 1 || this.isLoading());
 
   ngOnInit(): void {
     this.restoreDraft();
     this.startDraftCountdown();
+
+    this.form.valueChanges
+      .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.persistDraft());
 
     this.draftSave$
       .pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.persistDraft());
   }
 
-  get passwordsDoNotMatch(): boolean {
-    return hasPasswordMismatch(this.password, this.confirmPassword);
-  }
-
-  get hasTypedEmail(): boolean {
-    return this.email.trim().length > 0;
-  }
-
-  get isUtpEmailValid(): boolean {
-    return isUtpEmail(this.email);
-  }
-
-  get step1Valid(): boolean {
-    return isStep1Valid(this.validationSnapshot());
-  }
-
-  get step2Valid(): boolean {
-    return isStep2Valid(this.validationSnapshot());
-  }
-
-  get step3Valid(): boolean {
-    return isStep3Valid(this.validationSnapshot());
-  }
-
-  get isCurrentStepValid(): boolean {
-    if (this.currentStep === 1) return this.step1Valid;
-    if (this.currentStep === 2) return this.step2Valid;
-    return this.step3Valid;
-  }
-
-  get isFormValid(): boolean {
-    return this.step1Valid && this.step2Valid && this.step3Valid;
-  }
-
   nextStep(): void {
-    const nextStep = this.registerStepFlow.nextStep(
-      this.currentStep,
-      this.stepLabels.length,
-      this.isCurrentStepValid
-    );
-
-    if (nextStep === this.currentStep) {
-      this.showStepValidationToast();
-      return;
+    switch (this.currentStep()) {
+      case 1:
+        this.submitAccountStep();
+        return;
+      case 2:
+        this.submitIdentityStep();
+        return;
+      default:
+        this.submitPreferencesStep();
     }
-
-    this.currentStep = nextStep;
-    this.queueDraftSave();
   }
 
   prevStep(): void {
-    const previousStep = this.registerStepFlow.prevStep(this.currentStep);
-    if (previousStep === this.currentStep) return;
+    const previousStep = this.registerStepFlow.prevStep(this.currentStep());
+    if (previousStep === this.currentStep()) return;
 
-    this.currentStep = previousStep;
+    this.currentStep.set(previousStep as RegisterStep);
     this.queueDraftSave();
   }
 
   goToStep(step: number): void {
     const resolvedStep = this.registerStepFlow.resolveStep(
       step,
-      this.currentStep,
+      this.currentStep(),
       this.stepLabels.length,
-      this.step1Valid,
-      this.step2Valid
+      this.accountForm.valid,
+      this.identityForm.valid
     );
-    if (resolvedStep === this.currentStep) return;
 
-    this.currentStep = resolvedStep;
+    if (resolvedStep === this.currentStep()) return;
+
+    this.currentStep.set(resolvedStep as RegisterStep);
     this.queueDraftSave();
   }
 
-  queueDraftSave(): void {
-    this.draftSave$.next();
-  }
-
-  toggleInterest(interest: string): void {
-    if (this.selectedInterests.includes(interest)) {
-      this.selectedInterests = this.selectedInterests.filter((i) => i !== interest);
-      this.queueDraftSave();
-      return;
+  isCurrentStepValid(): boolean {
+    switch (this.currentStep()) {
+      case 1:
+        return this.accountForm.valid;
+      case 2:
+        return this.identityForm.valid;
+      default:
+        return this.preferencesForm.valid;
     }
-
-    this.selectedInterests = [...this.selectedInterests, interest];
-    this.queueDraftSave();
-  }
-
-  toggleIsActive(): void {
-    this.isActive = !this.isActive;
-    this.queueDraftSave();
-  }
-
-  toggleAcceptedTerms(): void {
-    this.acceptedTerms = !this.acceptedTerms;
-    this.queueDraftSave();
-  }
-
-  onRegister(): void {
-    if (!this.isFormValid) return;
-
-    this.isLoading = true;
-
-    this.authApi
-      .register({
-        email: this.email.trim(),
-        password: this.password,
-        username: this.username.trim(),
-        fullName: this.fullName.trim(),
-        bio: this.bio.trim(),
-        selectedInterests: this.selectedInterests,
-        isActive: this.isActive,
-        acceptedTerms: this.acceptedTerms,
-      })
-      .pipe(finalize(() => (this.isLoading = false)))
-      .subscribe({
-        next: () => {
-          this.registerDraftStorage.clear();
-          this.draftExpiresAt.set(0);
-          this.draftRemainingMs.set(0);
-          this.toastr.success('Cuenta creada correctamente.', 'Registro completado');
-          this.router.navigate(['/home']);
-        },
-        error: () => {
-          this.toastr.error('No se pudo completar el registro. Intenta nuevamente.', 'Error');
-        },
-      });
   }
 
   goToLogin(): void {
     this.router.navigate(['/login']);
   }
 
+  private submitAccountStep(): void {
+    if (this.accountForm.invalid) {
+      this.markGroupTouched(this.accountForm);
+      this.showStepValidationToast();
+      return;
+    }
+
+    const payload: RegisterStartRequest = {
+      email: this.accountForm.controls.email.value.trim(),
+      password: this.accountForm.controls.password.value,
+    };
+
+    this.isLoading.set(true);
+    this.authApi
+      .startRegistration(payload)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.currentStep.set(2);
+          this.queueDraftSave();
+          this.toastr.success('Validamos tu correo institucional. Continúa con tu identidad.', 'Paso 1 completado');
+        },
+        error: () => {
+          this.toastr.error('No se pudo validar el correo. Intenta nuevamente.', 'Registro detenido');
+        },
+      });
+  }
+
+  private submitIdentityStep(): void {
+    if (this.identityForm.invalid) {
+      this.markGroupTouched(this.identityForm);
+      this.showStepValidationToast();
+      return;
+    }
+
+    const payload: RegisterIdentityRequest = {
+      email: this.accountForm.controls.email.value.trim(),
+      firstName: this.identityForm.controls.firstName.value.trim(),
+      lastName: this.identityForm.controls.lastName.value.trim(),
+      career: this.identityForm.controls.career.value,
+    };
+
+    this.isLoading.set(true);
+    this.authApi
+      .completeRegistrationIdentity(payload)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.currentStep.set(3);
+          this.queueDraftSave();
+          this.toastr.success('Tu identidad académica fue guardada.', 'Paso 2 completado');
+        },
+        error: () => {
+          this.toastr.error('No se pudo guardar tu identidad. Intenta nuevamente.', 'Error');
+        },
+      });
+  }
+
+  private submitPreferencesStep(): void {
+    if (this.preferencesForm.invalid) {
+      this.markGroupTouched(this.preferencesForm);
+      this.showStepValidationToast();
+      return;
+    }
+
+    const payload: RegisterPreferencesRequest = {
+      email: this.accountForm.controls.email.value.trim(),
+      bio: this.preferencesForm.controls.bio.value.trim(),
+      selectedInterests: [...this.preferencesForm.controls.selectedInterests.value],
+      isActive: this.preferencesForm.controls.isActive.value,
+      acceptedTerms: this.preferencesForm.controls.acceptedTerms.value,
+    };
+
+    const fullName = buildFullName(
+      this.identityForm.controls.firstName.value,
+      this.identityForm.controls.lastName.value
+    );
+    const username = buildUsername(
+      this.identityForm.controls.firstName.value,
+      this.identityForm.controls.lastName.value,
+      this.accountForm.controls.email.value
+    );
+
+    this.isLoading.set(true);
+    this.authApi
+      .completeRegistrationPreferences(payload)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          const email = this.accountForm.controls.email.value.trim();
+          const user = response.user ?? { email, fullName, username };
+
+          this.authSession.start(
+            {
+              user,
+              tokens: response.tokens,
+            },
+            false
+          );
+
+          this.registerDraftStorage.clear();
+          this.draftExpiresAt.set(0);
+          this.draftRemainingMs.set(0);
+          this.resetFormState();
+          this.toastr.success('Tu perfil académico quedó listo.', 'Registro completado');
+          this.router.navigate(['/home']);
+        },
+        error: () => {
+          this.toastr.error('No se pudo completar el perfil. Intenta nuevamente.', 'Error');
+        },
+      });
+  }
+
   private restoreDraft(): void {
     const draft = this.registerDraftStorage.load();
     if (!draft) return;
 
-    this.email = draft.email;
-    this.password = draft.password;
-    this.confirmPassword = draft.confirmPassword;
-    this.username = draft.username;
-    this.fullName = draft.fullName;
-    this.bio = draft.bio;
-    this.selectedInterests = draft.selectedInterests;
-    this.isActive = draft.isActive;
-    this.acceptedTerms = draft.acceptedTerms;
-    this.draftExpiresAt.set(draft.expiresAt);
+    this.form.patchValue(
+      {
+        account: {
+          email: draft.email,
+          password: draft.password,
+          confirmPassword: draft.confirmPassword,
+        },
+        identity: {
+          firstName: draft.firstName,
+          lastName: draft.lastName,
+          career: draft.career,
+        },
+        preferences: {
+          bio: draft.bio,
+          selectedInterests: draft.selectedInterests,
+          isActive: draft.isActive,
+          acceptedTerms: draft.acceptedTerms,
+        },
+      },
+      { emitEvent: false }
+    );
 
     const maxStep = this.stepLabels.length;
-    this.currentStep = Math.min(Math.max(draft.currentStep, 1), maxStep);
+    this.currentStep.set(Math.min(Math.max(draft.currentStep, 1), maxStep) as RegisterStep);
+    this.draftExpiresAt.set(draft.expiresAt);
     this.updateDraftRemainingMs();
 
     if (this.hasActiveDraft()) {
@@ -242,18 +350,22 @@ export class Register {
   }
 
   private persistDraft(): void {
-    this.draftExpiresAt.set(this.registerDraftStorage.save({
-      email: this.email,
-      password: this.password,
-      confirmPassword: this.confirmPassword,
-      username: this.username,
-      fullName: this.fullName,
-      bio: this.bio,
-      selectedInterests: this.selectedInterests,
-      isActive: this.isActive,
-      acceptedTerms: this.acceptedTerms,
-      currentStep: this.currentStep,
-    }));
+    const raw = this.form.getRawValue();
+    this.draftExpiresAt.set(
+      this.registerDraftStorage.save({
+        email: raw.account.email,
+        password: raw.account.password,
+        confirmPassword: raw.account.confirmPassword,
+        firstName: raw.identity.firstName,
+        lastName: raw.identity.lastName,
+        career: raw.identity.career,
+        bio: raw.preferences.bio,
+        selectedInterests: raw.preferences.selectedInterests,
+        isActive: raw.preferences.isActive,
+        acceptedTerms: raw.preferences.acceptedTerms,
+        currentStep: this.currentStep(),
+      })
+    );
 
     this.updateDraftRemainingMs();
   }
@@ -279,26 +391,66 @@ export class Register {
     this.draftRemainingMs.set(Math.max(this.draftExpiresAt() - Date.now(), 0));
   }
 
-  private showStepValidationToast(): void {
-    if (this.currentStep !== 1) return;
-
-    if (this.hasTypedEmail && !this.isUtpEmailValid) {
-      this.toastr.error('Solo se permite correo institucional @utp.edu.pe.', 'Correo inválido');
-      return;
-    }
-
-    this.toastr.error('Completa los campos requeridos para continuar.', 'Faltan datos');
+  private queueDraftSave(): void {
+    this.draftSave$.next();
   }
 
-  private validationSnapshot(): RegisterValidationSnapshot {
-    return {
-      email: this.email,
-      password: this.password,
-      confirmPassword: this.confirmPassword,
-      username: this.username,
-      fullName: this.fullName,
-      acceptedTerms: this.acceptedTerms,
-      selectedInterests: this.selectedInterests,
-    };
+  private resetFormState(): void {
+    this.form.reset(
+      {
+        account: {
+          email: '',
+          password: '',
+          confirmPassword: '',
+        },
+        identity: {
+          firstName: '',
+          lastName: '',
+          career: '',
+        },
+        preferences: {
+          bio: '',
+          selectedInterests: [],
+          isActive: true,
+          acceptedTerms: false,
+        },
+      },
+      { emitEvent: false }
+    );
+
+    this.form.markAsPristine();
+    this.form.markAsUntouched();
+    this.currentStep.set(1);
+  }
+
+  private markGroupTouched(group: AbstractControl): void {
+    group.markAllAsTouched();
+  }
+
+  private showStepValidationToast(): void {
+    switch (this.currentStep()) {
+      case 1:
+        if (this.isControlInvalid(this.accountForm.controls.email)) {
+          this.toastr.error('Usa un correo institucional válido con dominio @utp.edu.pe.', 'Correo inválido');
+          return;
+        }
+
+        if (this.accountForm.errors?.['passwordMismatch']) {
+          this.toastr.error('Las contraseñas no coinciden.', 'Contraseña inválida');
+          return;
+        }
+
+        this.toastr.error('Completa el correo y la contraseña para continuar.', 'Faltan datos');
+        return;
+      case 2:
+        this.toastr.error('Completa nombre, apellido y carrera para seguir.', 'Faltan datos');
+        return;
+      default:
+        this.toastr.error('Selecciona tus intereses y acepta los términos para finalizar.', 'Faltan datos');
+    }
+  }
+
+  private isControlInvalid(control: AbstractControl | null): boolean {
+    return !!control && control.invalid && (control.dirty || control.touched);
   }
 }

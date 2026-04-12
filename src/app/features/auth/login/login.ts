@@ -68,16 +68,4 @@ export class Login {
         },
       });
   }
-
-  onUtpLogin(): void {
-    try {
-      this.isLoading = true;
-      const redirectUri = `${window.location.origin}/auth/microsoft/callback`;
-      const authStartUrl = this.authApi.getMicrosoftAuthStartUrl(redirectUri);
-      window.location.assign(authStartUrl);
-    } catch {
-      this.isLoading = false;
-      this.toastr.error('No se pudo iniciar el login con Microsoft.', 'Error');
-    }
-  }
 }
