@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth-guard';
 import { NotFound } from './features/not-found/not-found';
 
 export const routes: Routes = [
@@ -34,10 +33,6 @@ export const routes: Routes = [
             {
                 path: 'register',
                 loadComponent: () => import('./features/auth/register/register').then(m => m.Register)
-            },
-            {
-                path: 'auth/microsoft/callback',
-                loadComponent: () => import('./features/auth/microsoft-callback/microsoft-callback').then(m => m.MicrosoftCallback)
             }
         ]
     },

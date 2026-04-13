@@ -81,10 +81,7 @@ La URL del backend ya no está hardcodeada en el frontend.
 	```json
 	{
 	  "apiBaseUrl": "http://localhost:8080/api",
-	  "graphqlUrl": "http://localhost:8080/graphql",
-	  "microsoftAuthStartUrl": "http://localhost:8080/api/auth/microsoft/authorize",
-	  "microsoftAuthCallbackPath": "/auth/microsoft/callback",
-	  "microsoftAllowedDomain": "utp.edu.pe"
+	  "graphqlUrl": "http://localhost:8080/graphql"
 	}
 	```
 2. Angular carga esta configuración al iniciar la app desde:
@@ -94,24 +91,6 @@ La URL del backend ya no está hardcodeada en el frontend.
 	- [src/app/shared/services/api-client.service.ts](src/app/shared/services/api-client.service.ts)
 4. Para GraphQL, Apollo toma automáticamente `graphqlUrl` en:
 	- [src/app/app.config.ts](src/app/app.config.ts)
-
-### Login Microsoft (UTP)
-
-Frontend listo en:
-
-- Botón de inicio: [src/app/features/auth/login/login.ts](src/app/features/auth/login/login.ts)
-- Callback OAuth: [src/app/features/auth/microsoft-callback/microsoft-callback.ts](src/app/features/auth/microsoft-callback/microsoft-callback.ts)
-- Servicio auth: [src/app/features/auth/services/auth-api.service.ts](src/app/features/auth/services/auth-api.service.ts)
-
-Contrato esperado del backend en callback (`POST /auth/microsoft/callback`):
-
-```json
-{
-  "email": "usuario@utp.edu.pe"
-}
-```
-
-El frontend valida adicionalmente que el dominio sea `utp.edu.pe` antes de permitir el acceso.
 
 ### Flujo recomendado para conectar con Spring Boot
 

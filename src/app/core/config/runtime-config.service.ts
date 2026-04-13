@@ -42,24 +42,9 @@ export class RuntimeConfigService {
       ? record['graphqlUrl']
       : defaultRuntimeConfig.graphqlUrl;
 
-    const microsoftAuthStartUrl = typeof record['microsoftAuthStartUrl'] === 'string'
-      ? record['microsoftAuthStartUrl']
-      : defaultRuntimeConfig.microsoftAuthStartUrl;
-
-    const microsoftAuthCallbackPath = typeof record['microsoftAuthCallbackPath'] === 'string'
-      ? record['microsoftAuthCallbackPath']
-      : defaultRuntimeConfig.microsoftAuthCallbackPath;
-
-    const microsoftAllowedDomain = typeof record['microsoftAllowedDomain'] === 'string'
-      ? record['microsoftAllowedDomain']
-      : defaultRuntimeConfig.microsoftAllowedDomain;
-
     return {
       apiBaseUrl,
       graphqlUrl,
-      microsoftAuthStartUrl,
-      microsoftAuthCallbackPath,
-      microsoftAllowedDomain,
     };
   }
 }
