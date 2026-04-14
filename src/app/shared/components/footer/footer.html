@@ -1,5 +1,5 @@
-<footer class="bg-[#0a0c11] px-4 pb-10 pt-10 md:px-10 md:pb-12 md:pt-12 lg:px-14 lg:pb-14">
-  <div class="mx-auto flex w-full max-w-6xl flex-col gap-10 border-t border-white/8 pt-8 md:gap-12 md:pt-10">
+<footer class="app-footer bg-[#0a0c11] px-4 pb-10 pt-10 md:px-10 md:pb-12 md:pt-12 lg:px-14 lg:pb-14" [class.footer--feed]="isFeedRoute()">
+  <div class="mx-auto flex w-full flex-col gap-10 border-t border-white/8 pt-8 md:gap-12 md:pt-10" [class.max-w-3xl]="isFeedRoute()" [class.max-w-6xl]="!isFeedRoute()">
     <div class="grid grid-cols-1 gap-10 md:grid-cols-[1.2fr_2fr] md:gap-12">
       <div class="flex flex-col gap-5">
         <a routerLink="/" class="text-base font-medium uppercase tracking-[0.06em] text-[#d5d8df]" style="font-family: 'Inter', sans-serif;">

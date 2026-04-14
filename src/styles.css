@@ -2,3 +2,19 @@
 
 @import 'tailwindcss';
 @import 'ngx-toastr/toastr';
+
+:root {
+	--brand-black: #06080d;
+	--brand-surface: #0d1119;
+	--brand-surface-2: #111723;
+	--brand-border: #1d2432;
+	--brand-text: #f0f2f7;
+	--brand-muted: #9aa3b2;
+	--brand-red: #e3262e;
+}
+
+body {
+	margin: 0;
+	background-color: var(--brand-black);
+	color: var(--brand-text);
+}

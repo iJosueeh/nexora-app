@@ -19,23 +19,23 @@ export interface SuggestedUser {
 	standalone: true,
 	imports: [CommonModule],
 	template: `
-		<aside class="fixed right-0 top-0 h-screen w-80 border-l border-[#161b25] bg-[#06080d] overflow-y-auto flex flex-col" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+		<aside class="fixed right-0 top-0 flex h-screen w-80 flex-col overflow-y-auto border-l border-[var(--brand-border)] bg-[var(--brand-black)]" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
 			<div class="p-6 space-y-8">
 				<!-- Trends Section -->
 				<div>
-					<h2 class="text-xs font-bold uppercase tracking-widest text-[#878d99] mb-6">
+					<h2 class="mb-6 text-xs font-bold uppercase tracking-widest text-[var(--brand-muted)]">
 						Tendencias Actuales
 					</h2>
 					<ul class="space-y-6">
 						@for (trend of trends(); track trend.title) {
 							<li class="cursor-pointer group transition-colors duration-150">
-								<div class="text-xs text-[#878d99] font-medium uppercase tracking-wide group-hover:text-[#a0a6b0]">
+								<div class="text-xs font-medium uppercase tracking-wide text-[var(--brand-muted)] group-hover:text-[#a0a6b0]">
 									{{ trend.category }}
 								</div>
-								<div class="text-sm font-bold text-[#f0f2f7] group-hover:text-[#df3432] transition-colors mt-1 tracking-tight">
+								<div class="mt-1 text-sm font-bold tracking-tight text-[var(--brand-text)] transition-colors group-hover:text-[var(--brand-red)]">
 									{{ trend.title }}
 								</div>
-								<div class="text-xs text-[#b0b3b8] mt-1">
+								<div class="mt-1 text-xs text-[#b0b3b8]">
 									{{ trend.conversations }} conversaciones
 								</div>
 							</li>
@@ -45,12 +45,12 @@ export interface SuggestedUser {
 
 				<!-- Suggestions Section -->
 				<div>
-					<h2 class="text-xs font-bold uppercase tracking-widest text-[#878d99] mb-6">
+					<h2 class="mb-6 text-xs font-bold uppercase tracking-widest text-[var(--brand-muted)]">
 						Sugerencias para Seguir
 					</h2>
 					<ul class="space-y-4">
 						@for (user of suggestedUsers(); track user.id) {
-							<li class="flex items-center justify-between gap-4 p-4 rounded-lg bg-[#0d0d0d] hover:bg-[#131820] transition-colors duration-150">
+							<li class="flex items-center justify-between gap-4 rounded-lg bg-[var(--brand-surface)] p-4 transition-colors duration-150 hover:bg-[var(--brand-surface-2)]">
 								<div class="flex items-center gap-3 min-w-0 flex-1">
 									<img 
 										[src]="user.avatar" 
@@ -58,10 +58,10 @@ export interface SuggestedUser {
 										class="h-10 w-10 rounded-full object-cover flex-shrink-0"
 									/>
 									<div class="min-w-0">
-										<div class="text-xs font-bold text-[#f0f2f7] truncate">
+										<div class="truncate text-xs font-bold text-[var(--brand-text)]">
 											{{ user.name }}
 										</div>
-										<div class="text-xs text-[#878d99] truncate">
+										<div class="truncate text-xs text-[var(--brand-muted)]">
 											{{ user.role }}
 										</div>
 									</div>
@@ -69,9 +69,9 @@ export interface SuggestedUser {
 								<button 
 									class="
 										px-4 py-1.5 text-xs font-bold uppercase tracking-wide
-										border border-[#878d99] text-[#878d99] rounded-full
+										border border-[var(--brand-muted)] text-[var(--brand-muted)] rounded-full
 										transition-all duration-150
-										hover:border-[#df3432] hover:text-[#df3432] hover:bg-[#df3432]/10
+										hover:border-[var(--brand-red)] hover:text-[var(--brand-red)] hover:bg-[color-mix(in_srgb,var(--brand-red)_14%,transparent)]
 										flex-shrink-0 whitespace-nowrap
 									"
 								>
