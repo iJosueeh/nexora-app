@@ -7,10 +7,11 @@ import { Post } from '../../../interfaces/feed';
 	providedIn: 'root'
 })
 export class FeedService {
-	getPosts(): Observable<Post[]> {
+	getPosts(limit?: number, offset?: number): Observable<Post[]> {
 		const mockPosts: Post[] = [
 			{
 				id: '1',
+				is_official: true,
 				author: {
 					id: '101',
 					email: 'elena@utp.edu',
@@ -31,6 +32,7 @@ export class FeedService {
 			},
 			{
 				id: '2',
+				is_official: false,
 				author: {
 					id: '102',
 					email: 'marcus@utp.edu',
@@ -51,6 +53,14 @@ export class FeedService {
 			}
 		];
 
-		return of(mockPosts).pipe(delay(500));
+		if (limit === undefined || offset === undefined) {
+			return of(mockPosts).pipe(delay(500));
+		}
+
+		const start = Math.max(offset, 0);
+		const end = Math.max(start + limit, start);
+		const page = mockPosts.slice(start, end);
+
+		return of(page).pipe(delay(500));
 	}
 }

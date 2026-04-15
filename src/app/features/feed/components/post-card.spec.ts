@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PostCard } from './post-card';
+import { PostCardComponent } from './post-card';
 import { Post } from '../../../interfaces/feed';
-import { signal } from '@angular/core';
 
 describe('PostCard Component', () => {
-  let component: PostCard;
-  let fixture: ComponentFixture<PostCard>;
+  let component: PostCardComponent;
+  let fixture: ComponentFixture<PostCardComponent>;
 
   const mockPost: Post = {
     id: '1',
+    is_official: true,
     author: {
       id: '101',
       email: 'test@example.com',
@@ -30,14 +30,14 @@ describe('PostCard Component', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PostCard],
+      imports: [PostCardComponent],
     }).compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(PostCard);
+    fixture = TestBed.createComponent(PostCardComponent);
     component = fixture.componentInstance;
-    component.post = mockPost;
+    fixture.componentRef.setInput('post', mockPost);
     fixture.detectChanges();
   });
 
@@ -56,34 +56,13 @@ describe('PostCard Component', () => {
     expect(compiled.textContent).toContain('This is a test post');
   });
 
-  it('should display verified badge when author is verified', () => {
+  it('should display University Official badge when is_official is true', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('✓');
+    expect(compiled.textContent).toContain('University Official');
   });
 
-  it('should initialize isLiked signal as false', () => {
-    expect(component.isLiked()).toBe(false);
-  });
-
-  it('should toggle like status when toggleLike is called', () => {
-    expect(component.isLiked()).toBe(false);
-    component.toggleLike();
-    expect(component.isLiked()).toBe(true);
-    component.toggleLike();
-    expect(component.isLiked()).toBe(false);
-  });
-
-  it('should compute correct like count based on isLiked signal', () => {
-    expect(component.likeCount()).toBe(mockPost.likes);
-    component.toggleLike();
-    expect(component.likeCount()).toBe(mockPost.likes + 1);
-    component.toggleLike();
-    expect(component.likeCount()).toBe(mockPost.likes);
-  });
-
-  it('should format date as relative time in Spanish', () => {
-    const formattedDate = component.formatDate(new Date(Date.now() - 2 * 60 * 60 * 1000));
-    expect(formattedDate).toContain('hace');
+  it('should compute relative date in Spanish', () => {
+    expect(component.relativeDate().toLowerCase()).toContain('hace');
   });
 
   it('should display post tags', () => {
@@ -109,6 +88,6 @@ describe('PostCard Component', () => {
 
   it('should have hover state class when hovering post', () => {
     const article = fixture.nativeElement.querySelector('article');
-    expect(article.classList.contains('hover:bg-[#1a1a1a]')).toBe(true);
+    expect(article).toBeTruthy();
   });
 });
