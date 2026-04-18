@@ -1,59 +1,72 @@
-import { ChangeDetectionStrategy, Component, computed, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { catchError, finalize, of, take } from 'rxjs';
+
+import { FeedPublicationService } from '../../services/feed-publication.service';
 import { Post } from '../../../../interfaces/feed';
+import { PublicationDraft } from '../../pages/new-publication/publication-draft.model';
 
 @Component({
 	selector: 'app-post-creator',
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
+	imports: [RouterLink],
 	templateUrl: './post-creator.html'
 })
 export class PostCreatorComponent {
 	readonly created = output<Post>();
+	private readonly publicationService = inject(FeedPublicationService);
+
 	readonly tabs = ['Lo ultimo', 'Popular', 'Investigacion', 'Vida en el campus'];
 	readonly activeTab = signal(this.tabs[0]);
-	readonly draft = signal('');
+	readonly quickTitle = signal('');
+	readonly quickDescription = signal('');
+	readonly isSubmitting = signal(false);
 
-	readonly canPublish = computed(() => this.draft().trim().length >= 3);
+	readonly canPublish = computed(() => this.quickDescription().trim().length >= 3 && !this.isSubmitting());
 
-	updateDraft(event: Event): void {
+	updateTitle(event: Event): void {
+		const value = (event.target as HTMLInputElement).value;
+		this.quickTitle.set(value);
+	}
+
+	updateDescription(event: Event): void {
 		const value = (event.target as HTMLTextAreaElement).value;
-		this.draft.set(value);
+		this.quickDescription.set(value);
 	}
 
 	publish(): void {
-		const content = this.draft().trim();
-		if (content.length < 3) {
+		const title = this.quickTitle().trim();
+		const content = this.quickDescription().trim();
+		if (content.length < 3 || this.isSubmitting()) {
 			return;
 		}
 
-		this.created.emit({
-			id: this.createPostId(),
-			author: {
-				id: 'current-user',
-				email: 'usuario@nexora.app',
-				username: 'tu.usuario',
-				fullName: 'Tu Perfil',
-				role: 'Comunidad Nexora',
-				verified: false,
-				avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NexoraUser'
-			},
-			is_official: false,
-			content,
-			createdAt: new Date(),
-			likes: 0,
-			comments: 0,
-			shares: 0,
-			tags: []
-		});
+		const draft = this.buildQuickDraft(title, content);
+		this.isSubmitting.set(true);
 
-		this.draft.set('');
+		this.publicationService
+			.publish(draft)
+			.pipe(
+				catchError(() => of(this.publicationService.buildOptimisticPost(draft))),
+				finalize(() => this.isSubmitting.set(false)),
+				take(1)
+			)
+			.subscribe((post) => {
+				this.created.emit(post);
+				this.quickTitle.set('');
+				this.quickDescription.set('');
+			});
 	}
 
-	private createPostId(): string {
-		if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-			return crypto.randomUUID();
-		}
-
-		return `local-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+	private buildQuickDraft(title: string, content: string): PublicationDraft {
+		return {
+			title: title || content.split('\n')[0]?.slice(0, 90) || 'Nueva publicación',
+			content,
+			attachments: [],
+			visibility: 'public',
+			tags: [],
+			location: undefined,
+		};
 	}
 }

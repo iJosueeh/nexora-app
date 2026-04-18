@@ -128,11 +128,38 @@ function resolveProfileComplete(
 function resolveRoles(payload: Record<string, unknown>, nestedUser: Record<string, unknown>): string[] | undefined {
   const roles = nestedUser['roles'];
   if (Array.isArray(roles)) {
-    return roles.filter((role): role is string => typeof role === 'string' && !!role.trim());
+    return roles
+      .filter((role): role is string => typeof role === 'string' && !!role.trim())
+      .map((role) => normalizeRoleLabel(role));
   }
 
   const role = getString(payload, 'role') || getString(nestedUser, 'role');
-  return role ? [role] : undefined;
+  return role ? [normalizeRoleLabel(role)] : undefined;
+}
+
+function normalizeRoleLabel(role: string): string {
+  const trimmed = role.trim();
+  if (!trimmed) return trimmed;
+
+  const normalized = trimmed.toUpperCase();
+  const roleMap: Record<string, string> = {
+    ROLE_STUDENT: 'Estudiante',
+    ROLE_TEACHER: 'Docente',
+    ROLE_ADMIN: 'Administrador',
+    ROLE_MODERATOR: 'Moderador',
+    ROLE_RESEARCHER: 'Investigador',
+  };
+
+  if (normalized in roleMap) {
+    return roleMap[normalized];
+  }
+
+  return trimmed
+    .replace(/^ROLE_/, '')
+    .toLowerCase()
+    .split('_')
+    .map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+    .join(' ');
 }
 
 function toRecord(value: unknown): Record<string, unknown> {

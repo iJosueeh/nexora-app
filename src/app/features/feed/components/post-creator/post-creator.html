@@ -20,27 +20,49 @@
       YO
     </div>
     <div class="flex-1">
-      <label class="sr-only" for="post-content">Escribe una publicacion</label>
+      <label class="sr-only" for="quick-post-title">Titulo de la publicacion</label>
+      <input
+        id="quick-post-title"
+        type="text"
+        [value]="quickTitle()"
+        (input)="updateTitle($event)"
+        placeholder="Título (opcional)"
+        class="mb-2 w-full bg-transparent text-sm font-semibold text-[var(--brand-text)] placeholder:text-[var(--brand-muted)] outline-none"
+      />
+
+      <label class="sr-only" for="quick-post-description">Descripcion de la publicacion</label>
       <textarea
-        id="post-content"
+        id="quick-post-description"
         rows="2"
-        [value]="draft()"
-        (input)="updateDraft($event)"
-        placeholder="Comparte algo con tu comunidad..."
+        [value]="quickDescription()"
+        (input)="updateDescription($event)"
+        placeholder="Descripción: comparte algo con tu comunidad..."
         class="w-full resize-none bg-transparent text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-muted)] outline-none"
       ></textarea>
       <div class="mt-2 flex items-center justify-between">
         <p class="text-[11px] uppercase tracking-wide text-[var(--brand-muted)]">
           Vista: {{ activeTab() }}
         </p>
-        <button
-          type="button"
-          (click)="publish()"
-          [disabled]="!canPublish()"
-          class="rounded-full bg-[var(--brand-red)] px-4 py-2 text-xs font-semibold text-white transition-colors enabled:hover:bg-[#f13a43] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Publicar
-        </button>
+        <div class="flex items-center gap-2">
+          <a
+            routerLink="/publicar"
+            class="rounded-full border border-[var(--brand-border)] bg-black/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-muted)] transition-colors hover:text-[var(--brand-text)]"
+          >
+            Completo
+          </a>
+          <button
+            type="button"
+            (click)="publish()"
+            [disabled]="!canPublish()"
+            class="rounded-full bg-[var(--brand-red)] px-4 py-2 text-xs font-semibold text-white transition-colors enabled:hover:bg-[#f13a43] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            @if (isSubmitting()) {
+              Publicando...
+            } @else {
+              Publicar
+            }
+          </button>
+        </div>
       </div>
     </div>
   </div>

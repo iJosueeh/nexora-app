@@ -17,7 +17,7 @@ export class MainLayout {
 
   readonly shouldShowFooter = computed(() => {
     const path = this.currentPath();
-    return !(path.startsWith('/feed') || path.startsWith('/profile') || path.startsWith('/u/'));
+    return !(path.startsWith('/feed') || path.startsWith('/publicar') || path.startsWith('/profile') || path.startsWith('/u/'));
   });
 
   constructor() {
