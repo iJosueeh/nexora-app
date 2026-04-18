@@ -81,7 +81,7 @@ export class Login {
       }
 
       this.toastr.success('Inicio de sesión exitoso.', 'Bienvenido');
-      this.router.navigate(['/home']);
+      this.router.navigate(['/feed']);
     } catch (error) {
       if (sessionStarted) {
         this.authSession.clear();
