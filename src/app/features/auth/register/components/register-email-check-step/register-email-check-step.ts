@@ -11,6 +11,7 @@ export class RegisterEmailCheckStep {
   readonly email = input.required<string>();
   readonly isVerifying = input(false);
   readonly isResending = input(false);
+  readonly resendCooldownSeconds = input(0);
   readonly errorMessage = input('');
   readonly resetNonce = input(0);
 
@@ -25,6 +26,7 @@ export class RegisterEmailCheckStep {
 
   readonly otpCode = computed(() => this.otpDigits().join(''));
   readonly isComplete = computed(() => /^\d{8}$/.test(this.otpCode()));
+  readonly isResendDisabled = computed(() => this.isResending() || this.resendCooldownSeconds() > 0);
 
   constructor() {
     effect(() => {

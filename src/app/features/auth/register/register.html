@@ -76,6 +76,7 @@
                 [email]="accountForm.controls.email.value"
                 [isVerifying]="isVerifyingEmailOtp()"
                 [isResending]="isResendingEmail()"
+                [resendCooldownSeconds]="resendCooldownSeconds()"
                 [errorMessage]="emailVerificationError()"
                 [resetNonce]="otpResetNonce()"
                 (codeChange)="onVerificationCodeChange($event)"

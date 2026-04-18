@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, of, timeout } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AuthSession } from '../../../core/services/auth-session';
 import { SupabaseAuthService } from '../../../core/services/supabase-auth.service';
@@ -40,7 +40,7 @@ export class Login {
   }
 
   async onLogin(): Promise<void> {
-    if (!this.email || !this.password) return;
+    if (!this.email || !this.password || this.isLoading) return;
 
     const email = this.email.trim();
     const password = this.password;
@@ -60,8 +60,25 @@ export class Login {
       sessionStarted = true;
 
       const response = await firstValueFrom(
-        this.authApi.getSessionProfile()
+        this.authApi.getSessionProfile().pipe(
+          timeout(8000),
+          catchError(() => of(null))
+        )
       );
+
+      if (!response) {
+        if (sessionStarted) {
+          this.authSession.clear();
+          await this.supabaseAuth.signOut().catch(() => undefined);
+          sessionStarted = false;
+        }
+
+        this.toastr.error(
+          'No se pudo validar tu perfil con el servidor. Intenta nuevamente en unos segundos.',
+          'Acceso denegado temporalmente'
+        );
+        return;
+      }
 
       this.authSession.start(
         {

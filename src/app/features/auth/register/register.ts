@@ -79,6 +79,7 @@ export class Register {
   readonly emailVerificationError = signal('');
   readonly verificationCode = signal('');
   readonly otpResetNonce = signal(0);
+  readonly resendCooldownSeconds = signal(0);
   readonly loadingMessage = computed(() => {
     switch (this.currentStep()) {
       case 1:
@@ -340,7 +341,7 @@ export class Register {
   }
 
   async onResendValidationEmail(): Promise<void> {
-    if (this.accountForm.invalid || this.isResendingEmail()) {
+    if (this.accountForm.invalid || this.isResendingEmail() || this.resendCooldownSeconds() > 0) {
       return;
     }
 
@@ -352,9 +353,19 @@ export class Register {
       await this.supabaseAuth.resendSignupEmail(email);
       this.verificationCode.set('');
       this.otpResetNonce.update((value) => value + 1);
+      this.resendCooldownSeconds.set(45);
       this.toastr.success('Te reenviamos el correo de verificación.', 'Correo reenviado');
     } catch (error) {
-      this.toastr.error(this.supabaseAuth.toHumanErrorMessage(error), 'Error');
+      if (this.supabaseAuth.isResendRateLimitedError(error)) {
+        this.resendCooldownSeconds.set(60);
+        this.emailVerificationError.set('Espera un minuto antes de solicitar otro código.');
+        this.toastr.info('Espera unos segundos antes de reenviar nuevamente.', 'Límite temporal');
+      } else if (this.supabaseAuth.isUserAlreadyConfirmedOrRegisteredError(error)) {
+        this.toastr.info('Tu correo ya está confirmado. Inicia sesión para continuar.', 'Cuenta verificada');
+        this.router.navigate(['/login']);
+      } else {
+        this.toastr.error(this.supabaseAuth.toHumanErrorMessage(error), 'Error');
+      }
     } finally {
       this.isResendingEmail.set(false);
     }
@@ -545,6 +556,8 @@ export class Register {
   }
 
   private handleDraftTick(): void {
+    this.handleResendCooldownTick();
+
     if (!this.draftExpiresAt()) return;
 
     this.updateDraftRemainingMs();
@@ -553,6 +566,11 @@ export class Register {
     this.registerDraftStorage.clear();
     this.draftExpiresAt.set(0);
     this.toastr.warning('El borrador del registro expiró tras 30 minutos.', 'Draft expirado');
+  }
+
+  private handleResendCooldownTick(): void {
+    if (this.resendCooldownSeconds() <= 0) return;
+    this.resendCooldownSeconds.update((value) => Math.max(0, value - 1));
   }
 
   private updateDraftRemainingMs(): void {

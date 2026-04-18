@@ -42,6 +42,42 @@ export class SupabaseAuthService {
     }
   }
 
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    const { error } = await this.getClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async hasActiveSession(): Promise<boolean> {
+    const { data, error } = await this.getClient().auth.getSession();
+    if (error) {
+      throw error;
+    }
+
+    return !!data.session;
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    const { error } = await this.getClient().auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async signOut(): Promise<void> {
+    const { error } = await this.getClient().auth.signOut();
+    if (error) {
+      throw error;
+    }
+  }
+
   async signInWithEmail(email: string, password: string): Promise<SupabaseSignInResult> {
     const { data, error } = await this.getClient().auth.signInWithPassword({
       email,
@@ -77,12 +113,50 @@ export class SupabaseAuthService {
     return this.buildSessionResult(data.user.id, data.user.email ?? email, data.session);
   }
 
+  async verifyRecoveryOtp(email: string, token: string): Promise<SupabaseSignInResult> {
+    const { data, error } = await this.getClient().auth.verifyOtp({
+      email,
+      token,
+      type: 'recovery',
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data.user || !data.session) {
+      throw new Error('RECOVERY_OTP_VERIFICATION_FAILED');
+    }
+
+    return this.buildSessionResult(data.user.id, data.user.email ?? email, data.session);
+  }
+
   isEmailNotConfirmedError(error: unknown): boolean {
     if (!(error instanceof Error)) return false;
 
     const normalized = error.message.toLowerCase();
     return normalized.includes('email_not_confirmed')
       || normalized.includes('email not confirmed');
+  }
+
+  isResendRateLimitedError(error: unknown): boolean {
+    if (!(error instanceof Error)) return false;
+
+    const normalized = `${error.name} ${error.message}`.toLowerCase();
+    return normalized.includes('rate limit')
+      || normalized.includes('over_email_send_rate_limit')
+      || normalized.includes('security purposes')
+      || normalized.includes('too many requests');
+  }
+
+  isUserAlreadyConfirmedOrRegisteredError(error: unknown): boolean {
+    if (!(error instanceof Error)) return false;
+
+    const normalized = `${error.name} ${error.message}`.toLowerCase();
+    return normalized.includes('email has already been registered')
+      || normalized.includes('already registered')
+      || normalized.includes('already confirmed')
+      || normalized.includes('user already registered');
   }
 
   toHumanErrorMessage(error: unknown): string {
@@ -92,6 +166,10 @@ export class SupabaseAuthService {
 
     if (this.isOtpVerificationError(error)) {
       return 'El código es incorrecto o ya expiró. Solicita uno nuevo.';
+    }
+
+    if (this.isResendRateLimitedError(error)) {
+      return 'Espera unos segundos antes de solicitar otro correo.';
     }
 
     if (this.isAuthError(error)) {
