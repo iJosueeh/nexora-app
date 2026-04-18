@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FeedSidebar } from './feed-sidebar';
+import { FeedSidebar } from './feed-sidebar/feed-sidebar';
 import { RouterTestingModule } from '@angular/router/testing';
 
 describe('FeedSidebar Component', () => {

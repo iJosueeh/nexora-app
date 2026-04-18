@@ -1,4 +1,5 @@
 export * from './auth-tokens.model';
+export * from './auth-response-dto.model';
 export * from './auth-user.model';
 export * from './login-request.model';
 export * from './login-response.model';

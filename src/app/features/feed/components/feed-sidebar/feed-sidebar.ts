@@ -1,0 +1,40 @@
+import { Component, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+
+import { AuthSession } from '../../../../core/services/auth-session';
+
+@Component({
+  selector: 'app-feed-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterLinkActive],
+  templateUrl: './feed-sidebar.html',
+  styleUrl: './feed-sidebar.css'
+})
+export class FeedSidebar {
+  private readonly authSession = inject(AuthSession);
+  private readonly router = inject(Router);
+
+  notificationBadge = signal(5);
+  profileLink = computed(() => {
+    const username = this.authSession.getUser()?.username?.trim();
+    return username ? ['/u', username] : ['/profile'];
+  });
+
+  goToProfile(event: MouseEvent): void {
+    event.preventDefault();
+
+    const username = this.authSession.getUser()?.username?.trim();
+    if (username) {
+      void this.router.navigate(['/u', username]);
+      return;
+    }
+
+    if (this.authSession.isAuthenticated()) {
+      void this.router.navigate(['/profile']);
+      return;
+    }
+
+    void this.router.navigate(['/login']);
+  }
+}
