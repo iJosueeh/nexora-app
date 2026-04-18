@@ -8,24 +8,21 @@ import { FeedTrends } from './components/feed-trends';
 	imports: [FeedContainerComponent, FeedSidebar, FeedTrends],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
-		<div class="flex min-h-screen w-full bg-[var(--brand-black)]" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-			<!-- Sidebar Navigation (Left) - Fixed 64 (256px) -->
+		<div class="flex w-full min-h-screen bg-[var(--brand-black)]" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+			<!-- Sidebar Navigation (Left) -->
 			<app-feed-sidebar />
 
 			<!-- Main Feed (Center) -->
-			<!-- We use ml-64 to clear the left sidebar and mr-80 to clear the right trends sidebar -->
-			<main class="ml-64 mr-80 flex-1 min-h-screen border-x border-[var(--brand-border)]">
-				<div class="mx-auto max-w-4xl">
-					<!-- Feed Header -->
-					<div class="sticky top-0 z-40 border-b border-[var(--brand-border)] bg-[color-mix(in_srgb,var(--brand-black)_92%,transparent)] px-6 py-4 backdrop-blur">
-						<h1 class="text-base font-bold text-[var(--brand-text)]">Campus Feed</h1>
-					</div>
-
-					<app-feed-container />
+			<main class="ml-64 mr-80 min-h-screen w-full max-w-3xl flex-1 border-x border-[var(--brand-border)]">
+				<!-- Feed Header -->
+				<div class="sticky top-0 z-40 border-b border-[var(--brand-border)] bg-[color-mix(in_srgb,var(--brand-black)_92%,transparent)] px-6 py-4 backdrop-blur">
+					<h1 class="text-base font-bold text-[var(--brand-text)]">Campus Feed</h1>
 				</div>
+
+				<app-feed-container />
 			</main>
 
-			<!-- Trends Sidebar (Right) - Fixed 80 (320px) -->
+			<!-- Trends Sidebar (Right) -->
 			<app-feed-trends />
 		</div>
 	`,
