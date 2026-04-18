@@ -8,8 +8,10 @@ import {
 	signal,
 	viewChild
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Post } from '../../../../interfaces/feed';
-import { FeedService } from '../../services/feed.service';
+import { FeedPublicationQueueService } from '../../services/feed-publication-queue.service';
+import { FeedPaginationQueueService } from '../../services/feed-pagination-queue.service';
 import { PostCardComponent } from '../post-card/post-card';
 import { PostCreatorComponent } from '../post-creator/post-creator';
 
@@ -22,7 +24,8 @@ import { PostCreatorComponent } from '../post-creator/post-creator';
 	styleUrl: './feed-container.css'
 })
 export class FeedContainerComponent implements AfterViewInit {
-	private readonly feedService = inject(FeedService);
+	private readonly publicationQueue = inject(FeedPublicationQueueService);
+	private readonly paginationQueue = inject(FeedPaginationQueueService);
 	private readonly destroyRef = inject(DestroyRef);
 
 	readonly sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');
@@ -35,8 +38,15 @@ export class FeedContainerComponent implements AfterViewInit {
 
 	private offset = 0;
 	private reachedEnd = false;
+	private pageRequestVersion = 0;
 
 	constructor() {
+		const queuedPost = this.publicationQueue.consume();
+		if (queuedPost) {
+			this.visiblePosts.set([queuedPost]);
+			this.isInitialLoading.set(false);
+		}
+
 		this.loadNextBlock();
 	}
 
@@ -74,25 +84,48 @@ export class FeedContainerComponent implements AfterViewInit {
 			this.isLoadingMore.set(true);
 		}
 
-		this.feedService.getPosts(this.blockSize, this.offset).subscribe({
-			next: (posts) => {
-				if (posts.length === 0) {
-					this.reachedEnd = true;
-				}
+		const requestVersion = ++this.pageRequestVersion;
+		this.paginationQueue.enqueue(this.blockSize, this.offset)
+			.pipe(takeUntilDestroyed(this.destroyRef))
+			.subscribe({
+				next: (posts) => {
+					if (requestVersion !== this.pageRequestVersion) {
+						return;
+					}
 
-				this.visiblePosts.update((current) => [...current, ...posts]);
-				this.offset += posts.length;
-				this.isInitialLoading.set(false);
-				this.isLoadingMore.set(false);
-			},
-			error: () => {
-				this.isInitialLoading.set(false);
-				this.isLoadingMore.set(false);
-			}
-		});
+					if (posts.length === 0) {
+						this.reachedEnd = true;
+					}
+
+					this.visiblePosts.update((current) => this.mergePosts(current, posts));
+					this.offset += posts.length;
+					this.isInitialLoading.set(false);
+					this.isLoadingMore.set(false);
+				},
+				error: () => {
+					this.isInitialLoading.set(false);
+					this.isLoadingMore.set(false);
+				}
+			});
 	}
 
 	prependPost(post: Post): void {
-		this.visiblePosts.update((current) => [post, ...current]);
+		this.visiblePosts.update((current) => this.mergePosts([post], current));
+	}
+
+	private mergePosts(existing: Post[], incoming: Post[]): Post[] {
+		const merged = new Map<string, Post>();
+
+		for (const post of existing) {
+			merged.set(post.id, post);
+		}
+
+		for (const post of incoming) {
+			if (!merged.has(post.id)) {
+				merged.set(post.id, post);
+			}
+		}
+
+		return [...merged.values()];
 	}
 }

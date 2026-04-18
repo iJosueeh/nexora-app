@@ -1,66 +1,90 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Injectable, inject } from '@angular/core';
+import { Apollo } from 'apollo-angular';
+import { map, Observable } from 'rxjs';
+
+import { FEED_POSTS_QUERY } from '../../../graphql/graphql.queries';
 import { Post } from '../../../interfaces/feed';
 
+interface FeedAuthorQueryModel {
+  id: string;
+  username: string;
+  fullName: string;
+  avatarUrl?: string | null;
+}
+
+interface FeedPostQueryModel {
+  id: string;
+  titulo?: string | null;
+  contenido: string;
+  tags?: string[] | null;
+  location?: string | null;
+  isOfficial: boolean;
+  createdAt?: string | null;
+  commentsCount: number;
+  autor: FeedAuthorQueryModel;
+}
+
+interface FeedPostsQueryResponse {
+  obtenerFeedPrincipal: FeedPostQueryModel[];
+}
+
 @Injectable({
-	providedIn: 'root'
+  providedIn: 'root'
 })
 export class FeedService {
-	getPosts(limit?: number, offset?: number): Observable<Post[]> {
-		const mockPosts: Post[] = [
-			{
-				id: '1',
-				is_official: true,
-				author: {
-					id: '101',
-					email: 'elena@utp.edu',
-					username: 'drelenastarling',
-					fullName: 'Dr. Elena Sterling',
-					role: 'Computer Science',
-					avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
-					verified: true
-				},
-				content: 'Thrilled to announce that our latest paper on Quantum Neural Networks has been accepted for the International Conference on Machine Learning! 🚀 #Research #QuantumComputing #Nexora',
-				imageUrl: 'https://images.unsplash.com/photo-1518611505868-48510c2e022c?w=600&h=400&fit=crop',
-				createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas
-				likes: 1200,
-				comments: 145,
-				shares: 34,
-				isLiked: false,
-				tags: ['#Research', '#QuantumComputing', '#Nexora']
-			},
-			{
-				id: '2',
-				is_official: false,
-				author: {
-					id: '102',
-					email: 'marcus@utp.edu',
-					username: 'marcus_chen',
-					fullName: 'Marcus Chen',
-					role: 'Architecture & Design',
-					avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus',
-					verified: false
-				},
-				content: 'The new study hub in Building D is finally open! The Brutalist architecture combined with modern ergonomic seating makes it the perfect spot for late-night study sessions. Who\'s coming?',
-				imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop',
-				createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 horas
-				likes: 456,
-				comments: 89,
-				shares: 23,
-				isLiked: false,
-				tags: ['#Campus', '#Community']
-			}
-		];
+  private readonly apollo = inject(Apollo);
 
-		if (limit === undefined || offset === undefined) {
-			return of(mockPosts).pipe(delay(500));
-		}
+  getPosts(limit = 5, offset = 0): Observable<Post[]> {
+    return this.apollo
+      .query<FeedPostsQueryResponse>({
+        query: FEED_POSTS_QUERY,
+        variables: {
+          limit: Math.max(1, limit),
+          offset: Math.max(0, offset)
+        },
+        fetchPolicy: 'network-only'
+      })
+      .pipe(map((result) => (result.data?.obtenerFeedPrincipal ?? []).map((post) => this.mapPost(post))));
+  }
 
-		const start = Math.max(offset, 0);
-		const end = Math.max(start + limit, start);
-		const page = mockPosts.slice(start, end);
+  private mapPost(post: FeedPostQueryModel): Post {
+    return {
+      id: post.id,
+      author: this.mapAuthor(post),
+      is_official: post.isOfficial,
+      title: post.titulo?.trim() || undefined,
+      content: post.contenido,
+      location: post.location?.trim() || undefined,
+      createdAt: post.createdAt ? new Date(post.createdAt) : new Date(),
+      likes: 0,
+      comments: post.commentsCount,
+      shares: 0,
+      tags: post.tags && post.tags.length > 0 ? post.tags : this.extractTags(post.titulo, post.contenido),
+      isLiked: false
+    };
+  }
 
-		return of(page).pipe(delay(500));
-	}
+  private mapAuthor(post: FeedPostQueryModel) {
+    return {
+      id: post.autor.id,
+      email: `${post.autor.username}@nexora.app`,
+      username: post.autor.username,
+      fullName: post.autor.fullName,
+      role: post.isOfficial ? 'Nexora oficial' : 'Comunidad Nexora',
+      verified: post.isOfficial,
+      avatar: post.autor.avatarUrl || this.buildAvatarUrl(post.autor.username),
+      bio: ''
+    };
+  }
+
+  private extractTags(title?: string | null, content?: string): string[] {
+    const source = [title, content].filter(Boolean).join(' ');
+    const tags = source.match(/#[\p{L}\p{N}_]+/gu) ?? [];
+
+    return [...new Set(tags.map((tag) => tag.slice(1).toLowerCase()))].slice(0, 5);
+  }
+
+  private buildAvatarUrl(seed: string): string {
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+  }
 }

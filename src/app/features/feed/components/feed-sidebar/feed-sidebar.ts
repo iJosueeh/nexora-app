@@ -37,4 +37,9 @@ export class FeedSidebar {
 
     void this.router.navigate(['/login']);
   }
+
+  goToPublication(event: MouseEvent): void {
+    event.preventDefault();
+    void this.router.navigate(['/publicar']);
+  }
 }

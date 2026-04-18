@@ -27,6 +27,12 @@
     </div>
   </header>
 
+  @if (post().title) {
+    <h3 class="mb-2 text-base font-semibold leading-snug text-[var(--brand-text)]">
+      {{ post().title }}
+    </h3>
+  }
+
   <p class="mb-3 text-sm leading-relaxed text-[var(--brand-text)]">{{ post().content }}</p>
 
   @if (post().tags?.length) {

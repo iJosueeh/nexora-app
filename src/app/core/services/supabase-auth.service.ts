@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AuthError, SupabaseClient, createClient } from '@supabase/supabase-js';
+import { Router } from '@angular/router';
 
 import { RuntimeConfigService } from '../config/runtime-config.service';
+import { AuthSession } from './auth-session';
 import {
   buildSupabaseSessionResult,
   isEmailNotConfirmedError,
@@ -16,6 +18,8 @@ import {
 })
 export class SupabaseAuthService {
   private client: SupabaseClient | null = null;
+  private readonly authSession = inject(AuthSession);
+  private readonly router = inject(Router);
 
   constructor(private readonly runtimeConfig: RuntimeConfigService) {}
 
@@ -63,6 +67,68 @@ export class SupabaseAuthService {
     return !!data.session;
   }
 
+  async getCurrentTokens(): Promise<SupabaseSignInResult['tokens'] | null> {
+    const { data, error } = await this.getClient().auth.getSession();
+
+    if (error || !data.session) {
+      return null;
+    }
+
+    return {
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+      tokenType: 'Bearer',
+      expiresAt: data.session.expires_at ? new Date(data.session.expires_at * 1000).toISOString() : undefined,
+    };
+  }
+
+  async getValidTokens(): Promise<SupabaseSignInResult['tokens'] | null> {
+    const { data, error } = await this.getClient().auth.getSession();
+
+    if (error || !data.session) {
+      return null;
+    }
+
+    const session = data.session;
+    const expiresAt = session.expires_at ? session.expires_at * 1000 : undefined;
+    const isExpired = typeof expiresAt === 'number' ? Date.now() >= expiresAt - 30_000 : false;
+
+    if (!isExpired) {
+      return {
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        tokenType: 'Bearer',
+        expiresAt: session.expires_at ? new Date(session.expires_at * 1000).toISOString() : undefined,
+      };
+    }
+
+    const refreshed = await this.getClient().auth.refreshSession();
+    if (refreshed.error || !refreshed.data.session) {
+      await this.expireSessionAndRedirect();
+      return null;
+    }
+
+    const refreshedSession = refreshed.data.session;
+    const tokens = {
+      accessToken: refreshedSession.access_token,
+      refreshToken: refreshedSession.refresh_token,
+      tokenType: 'Bearer',
+      expiresAt: refreshedSession.expires_at ? new Date(refreshedSession.expires_at * 1000).toISOString() : undefined,
+    };
+
+    this.authSession.start(
+      {
+        user: this.authSession.getUser() ?? {
+          id: refreshed.data.user?.id,
+          email: refreshed.data.user?.email ?? '',
+        },
+        tokens,
+      },
+    );
+
+    return tokens;
+  }
+
   async updatePassword(newPassword: string): Promise<void> {
     const { error } = await this.getClient().auth.updateUser({
       password: newPassword,
@@ -77,6 +143,15 @@ export class SupabaseAuthService {
     const { error } = await this.getClient().auth.signOut();
     if (error) {
       throw error;
+    }
+  }
+
+  async expireSessionAndRedirect(): Promise<void> {
+    this.authSession.clear();
+    await this.getClient().auth.signOut().catch(() => undefined);
+
+    if (this.router.url !== '/login') {
+      await this.router.navigateByUrl('/login', { replaceUrl: true });
     }
   }
 

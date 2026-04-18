@@ -25,7 +25,7 @@ export class Navbar {
   readonly isAuthenticated = computed(() => !!this.authSession.session()?.user?.email);
   readonly isFeedRoute = computed(() => {
     const current = this.currentPath();
-    return current.startsWith('/feed') || current.startsWith('/profile') || current.startsWith('/u/');
+    return current.startsWith('/feed') || current.startsWith('/publicar') || current.startsWith('/profile') || current.startsWith('/u/');
   });
   readonly profileLink = computed(() => {
     const username = this.authSession.getUser()?.username?.trim();
