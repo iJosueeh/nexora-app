@@ -4,41 +4,70 @@
       Validación de correo institucional
     </p>
     <h3 class="mt-2 text-xl md:text-2xl font-semibold text-[#f2f4f8]">
-      Revisa tu bandeja de entrada
+      Ingresa el código de 8 dígitos
     </h3>
     <p class="mt-2 text-xs md:text-sm text-[#b1b7c3] leading-6">
-      Enviamos un enlace de verificación a
+      Enviamos un código a
       <span class="font-semibold text-[#f2f4f8]">{{ email() }}</span>.
-      Abre tu correo y confirma la cuenta para continuar con el perfil.
+      Si no aparece, revisa spam o solicita uno nuevo.
     </p>
   </div>
 
-  <div class="grid gap-3 md:grid-cols-2">
-    <a
-      href="https://mail.google.com/"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="flex items-center justify-center gap-2 rounded-xl border border-white/12 bg-[#0f1219] hover:bg-[#131820] text-[#d6dbe4] font-semibold text-xs md:text-sm py-3.5 transition-all duration-200"
-    >
-      Abrir Gmail
-    </a>
-    <a
-      href="https://outlook.office.com/mail/"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="flex items-center justify-center gap-2 rounded-xl border border-white/12 bg-[#0f1219] hover:bg-[#131820] text-[#d6dbe4] font-semibold text-xs md:text-sm py-3.5 transition-all duration-200"
-    >
-      Abrir Outlook
-    </a>
+  <div class="grid gap-3 rounded-2xl border border-white/10 bg-[#10151d] p-4 md:p-5">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-1">
+        <span class="text-[0.58rem] md:text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[#8f95a3]">
+          Código OTP
+        </span>
+        <p class="text-[0.62rem] md:text-[0.65rem] text-[#646c7c]">
+           Escribe o pega los 8 dígitos recibidos.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        (click)="editEmail.emit()"
+        class="text-[0.58rem] md:text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-[#f08f84] transition-colors duration-200 hover:text-[#f5a99d]"
+      >
+        Cambiar correo
+      </button>
+    </div>
+
+    <div class="mx-auto flex max-w-[18rem] items-center justify-center gap-1.5 sm:gap-2 md:gap-2.5">
+      @for (digit of otpDigits(); track $index; let index = $index) {
+        <input
+          #otpInput
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="1"
+          [value]="digit"
+          (input)="onDigitInput($event, index)"
+          (keydown)="onDigitKeydown($event, index)"
+          (paste)="onPaste($event)"
+          class="h-11 w-9 sm:h-11 sm:w-10 md:h-12 md:w-11 rounded-xl border border-white/12 bg-[#0b0f15] text-center text-base sm:text-lg font-semibold text-[#f2f4f8] outline-none transition-all duration-200 placeholder:text-[#525969] focus:border-[#df3432] focus:bg-[#121722]"
+        />
+      }
+    </div>
+
+    @if (errorMessage()) {
+      <p class="text-[0.72rem] md:text-xs text-[#f08f84] leading-5">
+        {{ errorMessage() }}
+      </p>
+    }
   </div>
 
-  <div class="grid gap-3 md:grid-cols-3">
+  <div class="grid gap-3 md:grid-cols-[1.15fr_0.95fr]">
     <button
-      type="button"
-      (click)="editEmail.emit()"
-      class="rounded-xl border border-white/15 text-[#b9c0cd] text-xs md:text-sm font-semibold uppercase tracking-[0.08em] py-3 transition-all duration-200 hover:border-white/30"
+      type="submit"
+      [disabled]="isVerifying() || !isComplete()"
+      class="rounded-xl bg-[#df3432] hover:bg-[#ee4542] disabled:cursor-not-allowed disabled:opacity-55 text-white font-bold text-xs md:text-sm uppercase tracking-[0.12em] py-3 transition-colors duration-200"
     >
-      Editar correo
+      @if (isVerifying()) {
+        Verificando...
+      } @else {
+        Verificar Código
+      }
     </button>
 
     <button
@@ -53,13 +82,9 @@
         Reenviar correo
       }
     </button>
-
-    <button
-      type="button"
-      (click)="continueStep.emit()"
-      class="rounded-xl bg-[#df3432] hover:bg-[#ee4542] text-white font-bold text-xs md:text-sm uppercase tracking-[0.12em] py-3 transition-colors duration-200"
-    >
-      Ya verifiqué
-    </button>
   </div>
+
+  <p class="text-[0.58rem] md:text-[0.62rem] text-[#5b6271] leading-5">
+    El código puede tardar unos minutos. Si no llega, solicita uno nuevo sin salir de esta pantalla.
+  </p>
 </section>

@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
-import { finalize } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { AuthSession } from '../../../core/services/auth-session';
+import { SupabaseAuthService } from '../../../core/services/supabase-auth.service';
 import { Loading } from '../../../shared/components/loading/loading';
 import { LOADING_MESSAGES } from '../../../shared/constants/loading-messages';
 import { AuthApiService } from '../services/auth-api.service';
@@ -29,6 +30,7 @@ export class Login {
   constructor(
     private router: Router,
     private readonly authApi: AuthApiService,
+    private readonly supabaseAuth: SupabaseAuthService,
     private readonly toastr: ToastrService,
     private readonly authSession: AuthSession
   ) { }
@@ -37,35 +39,61 @@ export class Login {
     this.router.navigate(['/register']);
   }
 
-  onLogin(): void {
+  async onLogin(): Promise<void> {
     if (!this.email || !this.password) return;
 
+    const email = this.email.trim();
+    const password = this.password;
+
     this.isLoading = true;
+    let sessionStarted = false;
+    try {
+      const supabaseSession = await this.supabaseAuth.signInWithEmail(email, password);
 
-    this.authApi
-      .login({
-        email: this.email.trim(),
-        password: this.password,
-        rememberMe: this.rememberMe,
-      })
-      .pipe(finalize(() => (this.isLoading = false)))
-      .subscribe({
-        next: (response) => {
-          const fallbackEmail = this.email.trim();
-          this.authSession.start(
-            {
-              user: response.user ?? { email: response.email ?? fallbackEmail },
-              tokens: response.tokens,
-            },
-            this.rememberMe
-          );
+      this.authSession.start(
+        {
+          user: supabaseSession.user,
+          tokens: supabaseSession.tokens,
+        },
+        this.rememberMe
+      );
+      sessionStarted = true;
 
-          this.toastr.success('Inicio de sesión exitoso.', 'Bienvenido');
-          this.router.navigate(['/home']);
+      const response = await firstValueFrom(
+        this.authApi.getSessionProfile()
+      );
+
+      this.authSession.start(
+        {
+          user: {
+            ...supabaseSession.user,
+            ...(response.user ?? { email: response.email ?? email }),
+          },
+          tokens: supabaseSession.tokens,
         },
-        error: () => {
-          this.toastr.error('No se pudo iniciar sesión. Verifica tus credenciales.', 'Error');
-        },
-      });
+        this.rememberMe
+      );
+
+      if (response.user?.profileComplete === false) {
+        this.toastr.info('Completa tu perfil academico para continuar.', 'Perfil incompleto');
+        this.router.navigate(['/register']);
+        return;
+      }
+
+      this.toastr.success('Inicio de sesión exitoso.', 'Bienvenido');
+      this.router.navigate(['/home']);
+    } catch (error) {
+      if (sessionStarted) {
+        this.authSession.clear();
+      }
+
+      const message = this.supabaseAuth.isEmailNotConfirmedError(error)
+        ? 'Debes confirmar tu correo institucional antes de iniciar sesión.'
+        : 'No se pudo iniciar sesión. Verifica tus credenciales.';
+
+      this.toastr.error(message, 'Error');
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

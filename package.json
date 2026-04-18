@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "sync:config": "node scripts/sync-runtime-config.mjs",
+    "start": "npm run sync:config && ng serve",
+    "serve": "npm run sync:config && ng serve",
+    "prebuild": "npm run sync:config",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -19,6 +22,7 @@
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
     "@apollo/client": "^4.0.1",
+    "@supabase/supabase-js": "^2.103.3",
     "apollo-angular": "^13.0.0",
     "graphql": "^16",
     "ngx-toastr": "^20.0.5",

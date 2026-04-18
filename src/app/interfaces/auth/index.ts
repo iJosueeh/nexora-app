@@ -4,6 +4,7 @@ export * from './login-request.model';
 export * from './login-response.model';
 export * from './register-identity-request.model';
 export * from './register-draft.model';
+export * from './register-catalogs-response.model';
 export * from './register-preferences-request.model';
 export * from './register-start-request.model';
 export * from './register-request.model';

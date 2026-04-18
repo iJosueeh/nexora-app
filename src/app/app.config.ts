@@ -4,12 +4,13 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { InMemoryCache } from '@apollo/client';
 import { RuntimeConfigService } from './core/config/runtime-config.service';
 import { API_BASE_URL, GRAPHQL_URL } from './core/tokens/api-endpoints.token';
+import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -32,7 +33,7 @@ export const appConfig: ApplicationConfig = {
       provide: GRAPHQL_URL,
       useFactory: () => inject(RuntimeConfigService).value.graphqlUrl,
     },
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authTokenInterceptor])),
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       const graphqlUrl = inject(GRAPHQL_URL);
