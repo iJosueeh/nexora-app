@@ -80,13 +80,10 @@ export class Login {
         return;
       }
 
-      this.authSession.start(
+      this.authSession.mergeUser(
         {
-          user: {
-            ...supabaseSession.user,
-            ...(response.user ?? { email: response.email ?? email }),
-          },
-          tokens: supabaseSession.tokens,
+          ...supabaseSession.user,
+          ...(response.user ?? { email: response.email ?? email }),
         },
         this.rememberMe
       );

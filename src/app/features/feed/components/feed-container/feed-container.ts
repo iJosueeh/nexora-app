@@ -8,54 +8,18 @@ import {
 	signal,
 	viewChild
 } from '@angular/core';
-import { Post } from '../../../interfaces/feed';
-import { FeedService } from '../services/feed.service';
-import { PostCardComponent } from './post-card';
-import { PostCreatorComponent } from './post-creator';
+import { Post } from '../../../../interfaces/feed';
+import { FeedService } from '../../services/feed.service';
+import { PostCardComponent } from '../post-card/post-card';
+import { PostCreatorComponent } from '../post-creator/post-creator';
 
 @Component({
 	selector: 'app-feed-container',
+	standalone: true,
 	imports: [PostCardComponent, PostCreatorComponent],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	template: `
-		<section class="space-y-4 px-5 py-4">
-			<app-post-creator (created)="prependPost($event)" />
-
-			@if (isInitialLoading()) {
-				@for (item of skeletonRows; track item) {
-					<article
-						class="animate-pulse rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-5"
-						aria-hidden="true"
-					>
-						<div class="mb-4 h-4 w-40 rounded bg-[var(--brand-border)]"></div>
-						<div class="mb-2 h-3 w-full rounded bg-[var(--brand-border)]"></div>
-						<div class="mb-4 h-3 w-4/5 rounded bg-[var(--brand-border)]"></div>
-						<div class="h-52 rounded-2xl bg-[var(--brand-border)]"></div>
-					</article>
-				}
-			} @else if (!visiblePosts().length) {
-				<div class="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-8 text-center text-sm text-[var(--brand-muted)]">
-					No hay publicaciones disponibles.
-				</div>
-			} @else {
-				@for (post of visiblePosts(); track post.id) {
-					@defer (on viewport) {
-						<app-post-card [post]="post" />
-					} @placeholder {
-						<article class="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-5">
-							<div class="h-20 animate-pulse rounded bg-[var(--brand-border)]"></div>
-						</article>
-					}
-				}
-			}
-
-			@if (isLoadingMore()) {
-				<div class="py-3 text-center text-xs text-[var(--brand-muted)]">Cargando mas publicaciones...</div>
-			}
-
-			<div #sentinel class="h-1 w-full" aria-hidden="true"></div>
-		</section>
-	`
+	templateUrl: './feed-container.html',
+	styleUrl: './feed-container.css'
 })
 export class FeedContainerComponent implements AfterViewInit {
 	private readonly feedService = inject(FeedService);

@@ -17,8 +17,16 @@ export const routes: Routes = [
             },
             {
                 path: 'feed',
-                loadComponent: () => import('./features/feed/feed-page').then(m => m.FeedPage)
+                loadComponent: () => import('./features/feed/pages/feed-page/feed-page').then(m => m.FeedPage)
                 // canActivate: [authGuard]  // Deshabilitado para testing
+            },
+            {
+                path: 'profile',
+                loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage)
+            },
+            {
+                path: 'u/:handle',
+                loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage)
             }
         ]
     },

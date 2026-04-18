@@ -21,14 +21,14 @@ export class FeedService {
 					avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
 					verified: true
 				},
-				content: 'Thrilled to announce that our latest paper on Quantum Neural Networks has been accepted for the International Conference on Machine Learning! 🚀 #Research #QuantumComputing #UtpScholar',
+				content: 'Thrilled to announce that our latest paper on Quantum Neural Networks has been accepted for the International Conference on Machine Learning! 🚀 #Research #QuantumComputing #Nexora',
 				imageUrl: 'https://images.unsplash.com/photo-1518611505868-48510c2e022c?w=600&h=400&fit=crop',
 				createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas
 				likes: 1200,
 				comments: 145,
 				shares: 34,
 				isLiked: false,
-				tags: ['#Research', '#QuantumComputing', '#UtpScholar']
+				tags: ['#Research', '#QuantumComputing', '#Nexora']
 			},
 			{
 				id: '2',

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
 import { AuthTokens, AuthUser, SessionPayload } from '../../interfaces/auth';
 
@@ -9,18 +9,77 @@ export class AuthSession {
   private readonly sessionStorageKey = 'nexora.auth.session';
   private readonly rememberStorageKey = 'nexora.auth.remember';
 
-  private session: SessionPayload | null;
+  readonly session = signal<SessionPayload | null>(null);
+  readonly user = computed(() => this.session()?.user ?? null);
 
   constructor() {
-    this.session = this.loadFromStorage(this.rememberStorageKey)
-      ?? this.loadFromStorage(this.sessionStorageKey);
+    this.session.set(
+      this.loadFromStorage(this.rememberStorageKey)
+        ?? this.loadFromStorage(this.sessionStorageKey)
+    );
   }
 
   start(payload: SessionPayload, rememberMe = false): void {
-    this.session = payload;
-    const serialized = JSON.stringify(payload);
+    this.session.set(payload);
+    this.persistSession(payload, rememberMe);
+  }
 
-    if (rememberMe) {
+  mergeUser(userPatch: Partial<AuthUser> & { email?: string }, rememberMe?: boolean): void {
+    const current = this.session();
+    const fallbackEmail = current?.user?.email ?? userPatch.email;
+    if (!fallbackEmail) return;
+
+    const payload: SessionPayload = {
+      user: {
+        ...(current?.user ?? { email: fallbackEmail }),
+        ...userPatch,
+        email: (userPatch.email ?? fallbackEmail).trim(),
+      },
+      tokens: current?.tokens,
+    };
+
+    this.session.set(payload);
+    this.persistSession(payload, rememberMe);
+  }
+
+  clear(): void {
+    this.session.set(null);
+    sessionStorage.removeItem(this.sessionStorageKey);
+    localStorage.removeItem(this.rememberStorageKey);
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.session()?.user?.email;
+  }
+
+  getUser(): AuthUser | null {
+    return this.user();
+  }
+
+  getTokens(): AuthTokens | null {
+    return this.session()?.tokens ?? null;
+  }
+
+  hasHydratedProfile(user = this.getUser()): boolean {
+    if (!user) return false;
+
+    return !!(
+      user.fullName
+      || user.username
+      || user.bio
+      || user.career
+      || user.avatarUrl
+      || user.bannerUrl
+      || user.academicInterests?.length
+      || user.profileComplete !== undefined
+    );
+  }
+
+  private persistSession(payload: SessionPayload, rememberMe?: boolean): void {
+    const serialized = JSON.stringify(payload);
+    const shouldRemember = rememberMe ?? this.isRememberedSession();
+
+    if (shouldRemember) {
       localStorage.setItem(this.rememberStorageKey, serialized);
       sessionStorage.removeItem(this.sessionStorageKey);
       return;
@@ -30,22 +89,8 @@ export class AuthSession {
     localStorage.removeItem(this.rememberStorageKey);
   }
 
-  clear(): void {
-    this.session = null;
-    sessionStorage.removeItem(this.sessionStorageKey);
-    localStorage.removeItem(this.rememberStorageKey);
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.session?.user?.email;
-  }
-
-  getUser(): AuthUser | null {
-    return this.session?.user ?? null;
-  }
-
-  getTokens(): AuthTokens | null {
-    return this.session?.tokens ?? null;
+  private isRememberedSession(): boolean {
+    return !!localStorage.getItem(this.rememberStorageKey);
   }
 
   private loadFromStorage(storageKey: string): SessionPayload | null {

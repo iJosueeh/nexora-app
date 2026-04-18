@@ -2,8 +2,10 @@
 
 <router-outlet></router-outlet>
 
-@defer (on viewport) {
-	<app-footer></app-footer>
-} @placeholder {
-	<div class="h-48 bg-[#0d0d0d]"></div>
+@if (shouldShowFooter()) {
+	@defer (on viewport) {
+		<app-footer></app-footer>
+	} @placeholder {
+		<div class="h-48 bg-[#0d0d0d]"></div>
+	}
 }

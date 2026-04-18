@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FeedTrends, Trend, SuggestedUser } from './feed-trends';
+import { FeedTrends, Trend, SuggestedUser } from './feed-trends/feed-trends';
 
 describe('FeedTrends Component', () => {
   let component: FeedTrends;

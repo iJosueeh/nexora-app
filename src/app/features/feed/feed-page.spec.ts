@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { FeedPage } from './feed-page';
+import { FeedPage } from './pages/feed-page/feed-page';
 
 describe('FeedPage Component', () => {
   let component: FeedPage;
@@ -21,9 +21,8 @@ describe('FeedPage Component', () => {
 
   it('should have 3-column layout with sidebars', () => {
     fixture.detectChanges();
-    const main = fixture.nativeElement.querySelector('main') as HTMLElement;
-    expect(main.classList.contains('ml-64')).toBe(true);
-    expect(main.classList.contains('mr-80')).toBe(true);
+    const grid = fixture.nativeElement.querySelector('.grid') as HTMLElement;
+    expect(grid.className).toContain('lg:grid-cols-[13.5rem_minmax(0,1fr)_17.5rem]');
   });
 
   it('should display feed header', () => {
@@ -53,7 +52,6 @@ describe('FeedPage Component', () => {
   it('should have proper border classes in main content', () => {
     fixture.detectChanges();
     const main = fixture.nativeElement.querySelector('main') as HTMLElement;
-    expect(main.classList.contains('border-x')).toBe(true);
     expect(main.classList.contains('border-[var(--brand-border)]')).toBe(true);
   });
 });
