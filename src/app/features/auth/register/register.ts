@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, debounceTime, finalize, interval } from 'rxjs';
+import { Subject, debounceTime, finalize, firstValueFrom, interval } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 
 import { AuthSession } from '../../../core/services/auth-session';
-import { RegisterIdentityRequest, RegisterPreferencesRequest, RegisterStartRequest } from '../../../interfaces/auth';
+import { SupabaseAuthService } from '../../../core/services/supabase-auth.service';
+import { RegisterIdentityRequest, RegisterPreferencesRequest } from '../../../interfaces/auth';
 import { Loading } from '../../../shared/components/loading/loading';
 import { LOADING_MESSAGES } from '../../../shared/constants/loading-messages';
 import { AuthApiService } from '../services/auth-api.service';
@@ -45,6 +46,7 @@ export class Register {
   private readonly router = inject(Router);
   private readonly toastr = inject(ToastrService);
   private readonly authApi = inject(AuthApiService);
+  private readonly supabaseAuth = inject(SupabaseAuthService);
   private readonly authSession = inject(AuthSession);
   private readonly registerDraftStorage = inject(RegisterDraftStorageService);
   private readonly registerStepFlow = inject(RegisterStepFlowService);
@@ -72,7 +74,11 @@ export class Register {
   readonly currentStep = signal<RegisterStep>(1);
   readonly isLoading = signal(false);
   readonly isResendingEmail = signal(false);
+  readonly isVerifyingEmailOtp = signal(false);
   readonly showEmailInboxGuide = signal(false);
+  readonly emailVerificationError = signal('');
+  readonly verificationCode = signal('');
+  readonly otpResetNonce = signal(0);
   readonly loadingMessage = computed(() => {
     switch (this.currentStep()) {
       case 1:
@@ -147,6 +153,7 @@ export class Register {
   readonly backDisabled = computed(() => this.currentStep() === 1 || this.isLoading());
 
   ngOnInit(): void {
+    void this.loadRegistrationCatalogs();
     this.restoreDraft();
     this.startDraftCountdown();
 
@@ -163,7 +170,12 @@ export class Register {
     switch (this.currentStep()) {
       case 1:
         if (this.showEmailInboxGuide()) {
-          this.onEmailGuideContinue();
+          if (!/^\d{8}$/.test(this.verificationCode())) {
+            this.emailVerificationError.set('Completa los 8 dígitos antes de verificar.');
+            return;
+          }
+
+          void this.onVerifyEmailCode();
           return;
         }
 
@@ -174,6 +186,14 @@ export class Register {
         return;
       default:
         this.submitPreferencesStep();
+    }
+  }
+
+  onVerificationCodeChange(value: string): void {
+    this.verificationCode.set(value);
+
+    if (this.emailVerificationError()) {
+      this.emailVerificationError.set('');
     }
   }
 
@@ -225,67 +245,119 @@ export class Register {
     this.router.navigate(['/login']);
   }
 
-  private submitAccountStep(): void {
+  private async submitAccountStep(): Promise<void> {
     if (this.accountForm.invalid) {
       this.markGroupTouched(this.accountForm);
       this.showStepValidationToast();
       return;
     }
 
-    const payload: RegisterStartRequest = {
-      email: this.accountForm.controls.email.value.trim(),
-      password: this.accountForm.controls.password.value,
-    };
+    const email = this.accountForm.controls.email.value.trim();
+    const password = this.accountForm.controls.password.value;
 
     this.isLoading.set(true);
-    this.authApi
-      .startRegistration(payload)
-      .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe({
-        next: () => {
-          this.showEmailInboxGuide.set(true);
-          this.queueDraftSave();
-          this.toastr.success('Revisa tu correo para validar la cuenta y continuar.', 'Correo enviado');
-        },
-        error: () => {
-          this.toastr.error('No se pudo validar el correo. Intenta nuevamente.', 'Registro detenido');
-        },
-      });
+    try {
+      await this.supabaseAuth.signUpWithEmail(email, password);
+
+      this.showEmailInboxGuide.set(true);
+      this.emailVerificationError.set('');
+      this.verificationCode.set('');
+      this.queueDraftSave();
+      this.toastr.success('Revisa tu correo para validar la cuenta y continuar.', 'Correo enviado');
+    } catch (error) {
+      this.toastr.error(this.supabaseAuth.toHumanErrorMessage(error), 'Registro detenido');
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
-  onEmailGuideContinue(): void {
-    this.showEmailInboxGuide.set(false);
-    this.currentStep.set(2);
-    this.queueDraftSave();
+  async onVerifyEmailCode(token = this.verificationCode()): Promise<void> {
+    const email = this.accountForm.controls.email.value.trim();
+    const cleanToken = token.replace(/\D/g, '').slice(0, 8);
+
+    if (cleanToken.length !== 8) {
+      this.emailVerificationError.set('Completa los 8 dígitos antes de verificar.');
+      return;
+    }
+
+    this.isVerifyingEmailOtp.set(true);
+    this.emailVerificationError.set('');
+    let sessionStarted = false;
+    try {
+      const supabaseSession = await this.supabaseAuth.verifySignupOtp(email, cleanToken);
+
+      this.authSession.start(
+        {
+          user: supabaseSession.user,
+          tokens: supabaseSession.tokens,
+        },
+        false
+      );
+      sessionStarted = true;
+
+      const sessionResponse = await firstValueFrom(
+        this.authApi.getSessionProfile()
+      );
+
+      this.authSession.start(
+        {
+          user: {
+            ...supabaseSession.user,
+            ...(sessionResponse.user ?? { email: sessionResponse.email ?? email }),
+          },
+          tokens: supabaseSession.tokens,
+        },
+        false
+      );
+
+      if (sessionResponse.user?.profileComplete === true) {
+        this.toastr.success('Tu cuenta ya tiene perfil completo.', 'Bienvenido');
+        this.router.navigate(['/feed']);
+        return;
+      }
+
+      this.showEmailInboxGuide.set(false);
+      this.emailVerificationError.set('');
+      this.verificationCode.set('');
+      this.currentStep.set(2);
+      this.queueDraftSave();
+    } catch (error) {
+      if (sessionStarted) {
+        this.authSession.clear();
+      }
+
+      this.emailVerificationError.set(this.supabaseAuth.toHumanErrorMessage(error));
+    } finally {
+      this.isVerifyingEmailOtp.set(false);
+    }
   }
 
   onEmailGuideEdit(): void {
     this.showEmailInboxGuide.set(false);
+    this.verificationCode.set('');
+    this.emailVerificationError.set('');
     this.queueDraftSave();
   }
 
-  onResendValidationEmail(): void {
+  async onResendValidationEmail(): Promise<void> {
     if (this.accountForm.invalid || this.isResendingEmail()) {
       return;
     }
 
-    const payload: RegisterStartRequest = {
-      email: this.accountForm.controls.email.value.trim(),
-      password: this.accountForm.controls.password.value,
-    };
+    const email = this.accountForm.controls.email.value.trim();
 
     this.isResendingEmail.set(true);
-    this.authApi
-      .startRegistration(payload)
-      .pipe(finalize(() => this.isResendingEmail.set(false)))
-      .subscribe({
-        next: () => {
-          this.toastr.success('Te reenviamos el correo de verificación.', 'Correo reenviado');
-        },
-        error: () => {
-          this.toastr.error('No se pudo reenviar el correo. Intenta nuevamente.', 'Error');
-        },
-      });
+    this.emailVerificationError.set('');
+    try {
+      await this.supabaseAuth.resendSignupEmail(email);
+      this.verificationCode.set('');
+      this.otpResetNonce.update((value) => value + 1);
+      this.toastr.success('Te reenviamos el correo de verificación.', 'Correo reenviado');
+    } catch (error) {
+      this.toastr.error(this.supabaseAuth.toHumanErrorMessage(error), 'Error');
+    } finally {
+      this.isResendingEmail.set(false);
+    }
   }
 
   private submitIdentityStep(): void {
@@ -295,10 +367,20 @@ export class Register {
       return;
     }
 
+    const fullName = buildFullName(
+      this.identityForm.controls.firstName.value,
+      this.identityForm.controls.lastName.value
+    );
+    const username = buildUsername(
+      this.identityForm.controls.firstName.value,
+      this.identityForm.controls.lastName.value,
+      this.accountForm.controls.email.value
+    );
+
     const payload: RegisterIdentityRequest = {
       email: this.accountForm.controls.email.value.trim(),
-      firstName: this.identityForm.controls.firstName.value.trim(),
-      lastName: this.identityForm.controls.lastName.value.trim(),
+      username,
+      fullName,
       career: this.identityForm.controls.career.value,
     };
 
@@ -328,7 +410,7 @@ export class Register {
     const payload: RegisterPreferencesRequest = {
       email: this.accountForm.controls.email.value.trim(),
       bio: this.preferencesForm.controls.bio.value.trim(),
-      selectedInterests: [...this.preferencesForm.controls.selectedInterests.value],
+      academicInterests: [...this.preferencesForm.controls.selectedInterests.value],
       isActive: this.preferencesForm.controls.isActive.value,
       acceptedTerms: this.preferencesForm.controls.acceptedTerms.value,
     };
@@ -350,12 +432,18 @@ export class Register {
       .subscribe({
         next: (response) => {
           const email = this.accountForm.controls.email.value.trim();
-          const user = response.user ?? { email, fullName, username };
+          const existingTokens = this.authSession.getTokens() ?? undefined;
+          const existingUser = this.authSession.getUser() ?? { email };
+          const user = {
+            ...existingUser,
+            ...(response.user ?? { email, fullName, username }),
+            profileComplete: true,
+          };
 
           this.authSession.start(
             {
               user,
-              tokens: response.tokens,
+              tokens: existingTokens,
             },
             false
           );
@@ -365,12 +453,28 @@ export class Register {
           this.draftRemainingMs.set(0);
           this.resetFormState();
           this.toastr.success('Tu perfil académico quedó listo.', 'Registro completado');
-          this.router.navigate(['/home']);
+          this.router.navigate(['/feed']);
         },
         error: () => {
           this.toastr.error('No se pudo completar el perfil. Intenta nuevamente.', 'Error');
         },
       });
+  }
+
+  private async loadRegistrationCatalogs(): Promise<void> {
+    try {
+      const catalogs = await firstValueFrom(this.authApi.getRegistrationCatalogs());
+
+      if (catalogs.careers.length > 0) {
+        this.careerOptions.set(catalogs.careers);
+      }
+
+      if (catalogs.academicInterests.length > 0) {
+        this.interestOptions.set(catalogs.academicInterests);
+      }
+    } catch {
+      // Keep local fallback lists if catalogs cannot be loaded.
+    }
   }
 
   private restoreDraft(): void {
@@ -402,6 +506,8 @@ export class Register {
     const maxStep = this.stepLabels.length;
     this.currentStep.set(Math.min(Math.max(draft.currentStep, 1), maxStep) as RegisterStep);
     this.showEmailInboxGuide.set(draft.isEmailGuideVisible && draft.currentStep === 1);
+    this.verificationCode.set('');
+    this.emailVerificationError.set('');
     this.draftExpiresAt.set(draft.expiresAt);
     this.updateDraftRemainingMs();
 
@@ -484,6 +590,8 @@ export class Register {
     this.form.markAsUntouched();
     this.currentStep.set(1);
     this.showEmailInboxGuide.set(false);
+    this.verificationCode.set('');
+    this.emailVerificationError.set('');
   }
 
   private markGroupTouched(group: AbstractControl): void {

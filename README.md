@@ -73,24 +73,38 @@ ng test
 
 ---
 
-## 🔌 Configuración dinámica del Back-End
+## 🔌 Configuración dinámica (Back-End + Supabase)
 
-La URL del backend ya no está hardcodeada en el frontend.
+Las URLs del backend y valores públicos de Supabase ya no están hardcodeados en el frontend.
 
-1. Edita [public/config/app-config.json](public/config/app-config.json) con las URLs de tu entorno:
-	```json
-	{
-	  "apiBaseUrl": "http://localhost:8080/api",
-	  "graphqlUrl": "http://localhost:8080/graphql"
-	}
+1. Crea tu archivo local `.env` a partir de `.env.example`:
+	```bash
+	cp .env.example .env
 	```
-2. Angular carga esta configuración al iniciar la app desde:
+2. Completa los valores en `.env`:
+	```env
+	API_BASE_URL=http://localhost:8080/api
+	GRAPHQL_URL=http://localhost:8080/graphql
+	SUPABASE_URL=https://your-project-ref.supabase.co
+	SUPABASE_ANON_KEY=your-public-anon-key
+	```
+3. Antes de `npm start` y `npm run build`, se ejecuta automáticamente:
+	- `npm run sync:config`
+	- Este script genera `public/config/app-config.json` a partir de `.env` y de [public/config/app-config.template.json](public/config/app-config.template.json).
+4. Angular carga la configuración al iniciar la app desde:
 	- [src/app/core/config/runtime-config.service.ts](src/app/core/config/runtime-config.service.ts)
 	- [src/app/app.config.ts](src/app/app.config.ts)
-3. Para peticiones REST, usa el cliente base reutilizable:
+5. Para peticiones REST, usa el cliente base reutilizable:
 	- [src/app/shared/services/api-client.service.ts](src/app/shared/services/api-client.service.ts)
-4. Para GraphQL, Apollo toma automáticamente `graphqlUrl` en:
+6. Para GraphQL, Apollo toma automáticamente `graphqlUrl` en:
 	- [src/app/app.config.ts](src/app/app.config.ts)
+
+### Seguridad de claves Supabase
+
+- `SUPABASE_ANON_KEY` es pública por diseño y puede vivir en frontend.
+- Nunca publiques ni uses en frontend la `service_role` key de Supabase.
+- `.env` está ignorado en [nexora-app/.gitignore](.gitignore), y solo se versiona `.env.example`.
+- `public/config/app-config.json` está ignorado para evitar commits accidentales con valores de entorno.
 
 ### Flujo recomendado para conectar con Spring Boot
 

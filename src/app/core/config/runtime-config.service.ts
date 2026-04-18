@@ -42,9 +42,19 @@ export class RuntimeConfigService {
       ? record['graphqlUrl']
       : defaultRuntimeConfig.graphqlUrl;
 
+    const supabaseUrl = typeof record['supabaseUrl'] === 'string'
+      ? record['supabaseUrl']
+      : defaultRuntimeConfig.supabaseUrl;
+
+    const supabaseAnonKey = typeof record['supabaseAnonKey'] === 'string'
+      ? record['supabaseAnonKey']
+      : defaultRuntimeConfig.supabaseAnonKey;
+
     return {
       apiBaseUrl,
       graphqlUrl,
+      supabaseUrl,
+      supabaseAnonKey,
     };
   }
 }

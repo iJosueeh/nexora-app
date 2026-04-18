@@ -74,8 +74,11 @@
             @if (showEmailInboxGuide()) {
               <app-register-email-check-step
                 [email]="accountForm.controls.email.value"
+                [isVerifying]="isVerifyingEmailOtp()"
                 [isResending]="isResendingEmail()"
-                (continueStep)="onEmailGuideContinue()"
+                [errorMessage]="emailVerificationError()"
+                [resetNonce]="otpResetNonce()"
+                (codeChange)="onVerificationCodeChange($event)"
                 (editEmail)="onEmailGuideEdit()"
                 (resendEmail)="onResendValidationEmail()"
               ></app-register-email-check-step>
