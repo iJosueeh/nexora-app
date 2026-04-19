@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "sync:environment": "node scripts/sync-runtime-config.mjs",
     "start": "ng serve",
+    "serve": "ng serve",
+    "prebuild": "npm run sync:environment",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -11,17 +14,20 @@
   "private": true,
   "packageManager": "npm@11.6.2",
   "dependencies": {
+    "@angular/animations": "^21.2.6",
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",
     "@angular/core": "^21.2.0",
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
-    "apollo-angular": "^13.0.0",
-    "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
     "@apollo/client": "^4.0.1",
-    "graphql": "^16"
+    "@supabase/supabase-js": "^2.103.3",
+    "apollo-angular": "^13.0.0",
+    "graphql": "^16",
+    "ngx-toastr": "^20.0.5",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular/build": "^21.2.5",

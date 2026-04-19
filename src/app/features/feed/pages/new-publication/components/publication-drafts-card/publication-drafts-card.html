@@ -1,0 +1,14 @@
+<section class="rounded-[22px] border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4">
+  <h3 class="text-sm font-semibold text-[var(--brand-text)]">Drafts</h3>
+
+  <div class="mt-4 space-y-3">
+    @for (draft of drafts(); track draft.title) {
+      <article class="flex items-center justify-between gap-3 rounded-xl bg-black/20 px-3 py-2.5">
+        <div class="min-w-0">
+          <p class="truncate text-[12px] font-medium text-[#d7c4c4]">{{ draft.title }}</p>
+        </div>
+        <span class="shrink-0 text-[10px] uppercase tracking-[0.16em] text-[var(--brand-muted)]">{{ draft.time }}</span>
+      </article>
+    }
+  </div>
+</section>

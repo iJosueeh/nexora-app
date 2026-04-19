@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 interface FooterLink {
   label: string;
@@ -28,7 +28,11 @@ interface Social {
   styleUrl: './footer.css',
 })
 export class Footer {
+  private readonly router = inject(Router, { optional: true });
+
   currentYear = new Date().getFullYear();
+
+  readonly isFeedRoute = computed(() => this.router?.url.startsWith('/feed') ?? false);
 
   socials: Social[] = [
     {

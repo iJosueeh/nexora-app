@@ -8,12 +8,53 @@ export const routes: Routes = [
         pathMatch: 'full'
     },
     {
-        path: 'home',
-        loadComponent: () => import('./features/home/home').then(m => m.Home)
+        path: '',
+        loadComponent: () => import('./layout/main-layout/main-layout').then(m => m.MainLayout),
+        children: [
+            {
+                path: 'home',
+                loadComponent: () => import('./features/home/home').then(m => m.Home)
+            },
+            {
+                path: 'feed',
+                loadComponent: () => import('./features/feed/pages/feed-page/feed-page').then(m => m.FeedPage)
+                // canActivate: [authGuard]  // Deshabilitado para testing
+            },
+            {
+                path: 'publicar',
+                loadComponent: () => import('./features/feed/pages/new-publication/new-publication-page').then(m => m.NewPublicationPage)
+            },
+            {
+                path: 'profile',
+                loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage)
+            },
+            {
+                path: 'u/:handle',
+                loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage)
+            }
+        ]
     },
     {
-        path: 'login',
-        loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
+        path: '',
+        loadComponent: () => import('./layout/auth-layout/auth-layout').then(m => m.AuthLayout),
+        children: [
+            {
+                path: 'login',
+                loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
+            },
+            {
+                path: 'register',
+                loadComponent: () => import('./features/auth/register/register').then(m => m.Register)
+            },
+            {
+                path: 'forgot-password',
+                loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword)
+            },
+            {
+                path: 'reset-password',
+                loadComponent: () => import('./features/auth/reset-password/reset-password').then(m => m.ResetPassword)
+            }
+        ]
     },
     { path: '**', component: NotFound }
 ];

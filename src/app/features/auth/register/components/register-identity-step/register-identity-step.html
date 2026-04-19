@@ -1,0 +1,52 @@
+<section [formGroup]="form()" class="grid gap-5 sm:grid-cols-2">
+  <div class="space-y-2">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Nombre</label>
+    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(firstNameControl)" [class.border-white/10]="!isInvalid(firstNameControl)">
+      <input
+        formControlName="firstName"
+        type="text"
+        placeholder="Tu nombre"
+        class="w-full bg-transparent text-sm text-white outline-none placeholder:text-[#596275]"
+        [attr.aria-invalid]="isInvalid(firstNameControl)"
+      />
+    </div>
+    @if (isInvalid(firstNameControl)) {
+      <p class="text-xs text-[#ff8a8a]">El nombre es obligatorio.</p>
+    }
+  </div>
+
+  <div class="space-y-2">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Apellido</label>
+    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(lastNameControl)" [class.border-white/10]="!isInvalid(lastNameControl)">
+      <input
+        formControlName="lastName"
+        type="text"
+        placeholder="Tu apellido"
+        class="w-full bg-transparent text-sm text-white outline-none placeholder:text-[#596275]"
+        [attr.aria-invalid]="isInvalid(lastNameControl)"
+      />
+    </div>
+    @if (isInvalid(lastNameControl)) {
+      <p class="text-xs text-[#ff8a8a]">El apellido es obligatorio.</p>
+    }
+  </div>
+
+  <div class="sm:col-span-2 space-y-2">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Carrera</label>
+    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(careerControl)" [class.border-white/10]="!isInvalid(careerControl)">
+      <select
+        formControlName="career"
+        class="w-full bg-transparent text-sm text-white outline-none [&>option]:bg-[#0f1218]"
+        [attr.aria-invalid]="isInvalid(careerControl)"
+      >
+        <option value="">Selecciona tu carrera</option>
+        @for (career of careerOptions(); track career) {
+          <option [value]="career">{{ career }}</option>
+        }
+      </select>
+    </div>
+    @if (isInvalid(careerControl)) {
+      <p class="text-xs text-[#ff8a8a]">Selecciona una carrera para continuar.</p>
+    }
+  </div>
+</section>

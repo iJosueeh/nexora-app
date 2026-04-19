@@ -1,0 +1,69 @@
+<section class="mb-4 space-y-3 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4">
+  <div class="flex flex-wrap items-center gap-2">
+    @for (tab of tabs; track tab) {
+      <button
+        type="button"
+        (click)="activeTab.set(tab)"
+        class="rounded-full px-4 py-1.5 text-xs font-semibold transition-colors"
+        [class.bg-[var(--brand-red)]]="activeTab() === tab"
+        [class.text-white]="activeTab() === tab"
+        [class.bg-black/20]="activeTab() !== tab"
+        [class.text-[var(--brand-muted)]]="activeTab() !== tab"
+      >
+        {{ tab }}
+      </button>
+    }
+  </div>
+
+  <div class="flex items-start gap-3 rounded-xl border border-[var(--brand-border)] bg-black/20 p-3">
+    <div class="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-red)]/20 text-xs font-bold text-[var(--brand-red)]">
+      YO
+    </div>
+    <div class="flex-1">
+      <label class="sr-only" for="quick-post-title">Titulo de la publicacion</label>
+      <input
+        id="quick-post-title"
+        type="text"
+        [value]="quickTitle()"
+        (input)="updateTitle($event)"
+        placeholder="Título (opcional)"
+        class="mb-2 w-full bg-transparent text-sm font-semibold text-[var(--brand-text)] placeholder:text-[var(--brand-muted)] outline-none"
+      />
+
+      <label class="sr-only" for="quick-post-description">Descripcion de la publicacion</label>
+      <textarea
+        id="quick-post-description"
+        rows="2"
+        [value]="quickDescription()"
+        (input)="updateDescription($event)"
+        placeholder="Descripción: comparte algo con tu comunidad..."
+        class="w-full resize-none bg-transparent text-sm text-[var(--brand-text)] placeholder:text-[var(--brand-muted)] outline-none"
+      ></textarea>
+      <div class="mt-2 flex items-center justify-between">
+        <p class="text-[11px] uppercase tracking-wide text-[var(--brand-muted)]">
+          Vista: {{ activeTab() }}
+        </p>
+        <div class="flex items-center gap-2">
+          <a
+            routerLink="/publicar"
+            class="rounded-full border border-[var(--brand-border)] bg-black/20 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-muted)] transition-colors hover:text-[var(--brand-text)]"
+          >
+            Completo
+          </a>
+          <button
+            type="button"
+            (click)="publish()"
+            [disabled]="!canPublish()"
+            class="rounded-full bg-[var(--brand-red)] px-4 py-2 text-xs font-semibold text-white transition-colors enabled:hover:bg-[#f13a43] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            @if (isSubmitting()) {
+              Publicando...
+            } @else {
+              Publicar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
