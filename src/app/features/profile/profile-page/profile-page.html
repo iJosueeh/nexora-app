@@ -81,7 +81,7 @@
       </main>
     } @else {
       <main class="space-y-5 pb-8 sm:space-y-6">
-        <section class="overflow-hidden rounded-3xl border border-[var(--brand-border)] bg-[var(--brand-surface)]">
+        <section class="overflow-visible rounded-3xl border border-[var(--brand-border)] bg-[var(--brand-surface)]">
           <div class="relative h-56 overflow-hidden sm:h-64 lg:h-72">
             <img [src]="bannerUrl()" [alt]="displayName() + ' banner'" class="h-full w-full object-cover opacity-85" />
             <div class="absolute inset-0 bg-gradient-to-t from-[#0a0b10] via-[#0a0b10]/30 to-transparent"></div>
@@ -149,18 +149,23 @@
                       Inicia sesión para seguir
                     </button>
                   }
-                  <div class="relative">
+                  <div class="relative z-40">
                     <button
                       type="button"
                       (click)="toggleProfileMenu($event)"
-                      class="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/6 text-[#d8dae0]"
+                      class="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/8 text-white transition-colors hover:border-white/35 hover:bg-white/14"
+                      aria-label="Abrir menu del perfil"
                     >
-                      ⋯
+                      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true">
+                        <circle cx="6" cy="12" r="1"></circle>
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="18" cy="12" r="1"></circle>
+                      </svg>
                     </button>
 
                     @if (isProfileMenuOpen()) {
                       <div
-                        class="absolute right-0 top-[calc(100%+0.5rem)] z-30 w-56 overflow-hidden rounded-2xl border border-white/12 bg-[#10131b] p-1.5 shadow-[0_18px_40px_rgba(0,0,0,0.45)]"
+                        class="fixed inset-x-3 bottom-4 z-[90] max-h-[70vh] overflow-y-auto rounded-2xl border border-white/12 bg-[#10131b] p-1.5 shadow-[0_18px_40px_rgba(0,0,0,0.45)] sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:w-56"
                         (click)="$event.stopPropagation()"
                       >
                         <button
@@ -225,11 +230,11 @@
           </div>
         </section>
 
-        <section class="grid gap-5 border-b border-white/8 pb-4 sm:grid-cols-3">
+        <section class="grid grid-cols-3 gap-3 border-b border-white/8 pb-4 sm:gap-5">
           @for (stat of stats(); track stat.label) {
-            <article>
-              <p class="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-[#7f8591]">{{ stat.label }}</p>
-              <p class="mt-2 text-[2rem] font-bold leading-none text-[#f4f5f7]">{{ stat.value }}</p>
+            <article class="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-3 text-center sm:px-4">
+              <p class="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-[#7f8591] sm:text-[0.6rem] sm:tracking-[0.2em]">{{ stat.label }}</p>
+              <p class="mt-2 text-[1.65rem] font-bold leading-none text-[#f4f5f7] sm:text-[2rem]">{{ stat.value }}</p>
             </article>
           }
         </section>
@@ -243,7 +248,7 @@
         }
 
         <section class="grid gap-4 xl:grid-cols-2">
-          @for (card of visibleCards(); track card.title) {
+          @for (card of visibleCards(); track card.id) {
             @switch (card.variant) {
               @case ('image') {
                 <article class="overflow-hidden rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] transition-transform duration-200 hover:-translate-y-0.5">
@@ -288,7 +293,26 @@
               }
             }
           }
+
+          @if (visibleCards().length === 0) {
+            <article class="col-span-full rounded-2xl border border-white/10 bg-white/4 p-6 text-center">
+              <p class="text-sm text-[#c7ccd6]">No encontramos publicaciones para este perfil aun. Si ya publicaste, recarga la pagina o verifica tu username de perfil.</p>
+            </article>
+          }
         </section>
+
+        @if (!isAnonymousPreview() && hasMorePosts()) {
+          <section class="flex justify-center pt-2">
+            <button
+              type="button"
+              (click)="loadMorePosts()"
+              [disabled]="isLoadingMorePosts()"
+              class="rounded-full border border-white/12 bg-white/6 px-5 py-2.5 text-sm font-semibold text-[#e8eaf0] transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {{ isLoadingMorePosts() ? 'Cargando...' : 'Cargar mas publicaciones' }}
+            </button>
+          </section>
+        }
       </main>
 
       @if (isAnonymousPreview() && showAnonymousLock()) {

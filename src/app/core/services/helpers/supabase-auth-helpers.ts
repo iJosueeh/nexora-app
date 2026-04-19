@@ -39,6 +39,10 @@ export function toHumanSupabaseErrorMessage(error: unknown): string {
     return 'Tu correo aun no esta verificado. Revisa tu bandeja y confirma el enlace.';
   }
 
+  if (isInvalidLoginCredentialsError(error)) {
+    return 'El correo o la contraseña no coinciden.';
+  }
+
   if (isOtpVerificationError(error)) {
     return 'El código es incorrecto o ya expiró. Solicita uno nuevo.';
   }
@@ -94,4 +98,13 @@ function isOtpVerificationError(error: unknown): boolean {
     || normalized.includes('token has expired')
     || normalized.includes('expired')
     || normalized.includes('verification failed');
+}
+
+function isInvalidLoginCredentialsError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+
+  const normalized = `${error.name} ${error.message}`.toLowerCase();
+  return normalized.includes('invalid login credentials')
+    || normalized.includes('invalid credentials')
+    || normalized.includes('invalid_grant');
 }
