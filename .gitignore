@@ -48,6 +48,3 @@ Thumbs.db
 .env.local
 .env.*.local
 !.env.example
-
-# Runtime config generated from .env
-/public/config/app-config.json

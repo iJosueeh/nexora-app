@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { AuthError, SupabaseClient, createClient } from '@supabase/supabase-js';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { Router } from '@angular/router';
 
-import { RuntimeConfigService } from '../config/runtime-config.service';
 import { AuthSession } from './auth-session';
+import { environment } from '../../../environments/environment';
 import {
   buildSupabaseSessionResult,
   isEmailNotConfirmedError,
@@ -20,8 +20,6 @@ export class SupabaseAuthService {
   private client: SupabaseClient | null = null;
   private readonly authSession = inject(AuthSession);
   private readonly router = inject(Router);
-
-  constructor(private readonly runtimeConfig: RuntimeConfigService) {}
 
   async signUpWithEmail(email: string, password: string): Promise<void> {
     const { error } = await this.getClient().auth.signUp({
@@ -227,9 +225,9 @@ export class SupabaseAuthService {
   private getClient(): SupabaseClient {
     if (this.client) return this.client;
 
-    const { supabaseUrl, supabaseAnonKey } = this.runtimeConfig.value;
+    const { supabaseUrl, supabaseAnonKey } = environment;
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Falta configurar supabaseUrl o supabaseAnonKey en public/config/app-config.json');
+      throw new Error('Falta configurar supabaseUrl o supabaseAnonKey en src/environments/environment.ts o environment.prod.ts');
     }
 
     this.client = createClient(supabaseUrl, supabaseAnonKey, {

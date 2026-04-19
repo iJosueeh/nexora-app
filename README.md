@@ -73,46 +73,42 @@ ng test
 
 ---
 
-## 🔌 Configuración dinámica (Back-End + Supabase)
+## 🔌 Configuración de entorno (Front-End + Supabase)
 
-Las URLs del backend y valores públicos de Supabase ya no están hardcodeados en el frontend.
+Las URLs del backend y los valores públicos de Supabase se controlan desde Angular environment files.
 
 1. Crea tu archivo local `.env` a partir de `.env.example`:
 	```bash
 	cp .env.example .env
 	```
-2. Completa los valores en `.env`:
+2. Completa los valores en `.env` para desarrollo local. En producción, define esas mismas variables en tu plataforma de despliegue o en tu CI:
 	```env
 	API_BASE_URL=http://localhost:8080/api
 	GRAPHQL_URL=http://localhost:8080/graphql
 	SUPABASE_URL=https://your-project-ref.supabase.co
 	SUPABASE_ANON_KEY=your-public-anon-key
 	```
-3. Antes de `npm start` y `npm run build`, se ejecuta automáticamente:
-	- `npm run sync:config`
-	- Este script genera `public/config/app-config.json` a partir de `.env` y de [public/config/app-config.template.json](public/config/app-config.template.json).
-4. Angular carga la configuración al iniciar la app desde:
-	- [src/app/core/config/runtime-config.service.ts](src/app/core/config/runtime-config.service.ts)
-	- [src/app/app.config.ts](src/app/app.config.ts)
-5. Para peticiones REST, usa el cliente base reutilizable:
+3. El desarrollo local usa [src/environments/environment.ts](src/environments/environment.ts).
+4. El build de producción usa [src/environments/environment.prod.ts](src/environments/environment.prod.ts) mediante file replacement en [angular.json](angular.json).
+5. Antes de `npm run build`, se genera automáticamente `src/environments/environment.prod.ts` desde `.env` local o desde `process.env` en CI/CD.
+6. Para peticiones REST, usa el cliente base reutilizable:
 	- [src/app/shared/services/api-client.service.ts](src/app/shared/services/api-client.service.ts)
-6. Para GraphQL, Apollo toma automáticamente `graphqlUrl` en:
-	- [src/app/app.config.ts](src/app/app.config.ts)
+7. Para GraphQL, Apollo toma automáticamente `graphqlUrl` desde [src/app/app.config.ts](src/app/app.config.ts).
 
 ### Seguridad de claves Supabase
 
 - `SUPABASE_ANON_KEY` es pública por diseño y puede vivir en frontend.
 - Nunca publiques ni uses en frontend la `service_role` key de Supabase.
 - `.env` está ignorado en [nexora-app/.gitignore](.gitignore), y solo se versiona `.env.example`.
-- `public/config/app-config.json` está ignorado para evitar commits accidentales con valores de entorno.
+- En producción no subas `.env`; inyecta las variables en Vercel, Render, GitHub Actions u otro pipeline.
 
 ### Flujo recomendado para conectar con Spring Boot
 
 1. Define endpoints REST en Spring Boot (ejemplo: `/api/auth/login`, `/api/auth/register`).
- 2. Crea servicios por feature en Angular usando `ApiClientService`.
+2. Crea servicios por feature en Angular usando `ApiClientService`.
 	Ejemplo implementado: [src/app/features/auth/services/auth-api.service.ts](src/app/features/auth/services/auth-api.service.ts)
 3. Mantén DTOs/interfaces en `src/app/interfaces`.
-4. Cambia solo `public/config/app-config.json` por ambiente (dev, qa, prod) sin recompilar código.
+4. Ajusta solo los environment files cuando cambie el backend o Supabase.
 
 ---
 

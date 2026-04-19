@@ -3,8 +3,7 @@ import { resolve } from 'node:path';
 
 const rootDir = process.cwd();
 const envPath = resolve(rootDir, '.env');
-const configPath = resolve(rootDir, 'public/config/app-config.json');
-const templatePath = resolve(rootDir, 'public/config/app-config.template.json');
+const environmentProdPath = resolve(rootDir, 'src/environments/environment.prod.ts');
 
 const hardcodedDefaults = {
   apiBaseUrl: 'http://localhost:8080/api',
@@ -13,23 +12,12 @@ const hardcodedDefaults = {
   supabaseAnonKey: '',
 };
 
-function readTemplateDefaults() {
-  if (!existsSync(templatePath)) {
-    return hardcodedDefaults;
-  }
-
-  try {
-    const parsed = JSON.parse(readFileSync(templatePath, 'utf8'));
-    return {
-      apiBaseUrl: typeof parsed.apiBaseUrl === 'string' ? parsed.apiBaseUrl : hardcodedDefaults.apiBaseUrl,
-      graphqlUrl: typeof parsed.graphqlUrl === 'string' ? parsed.graphqlUrl : hardcodedDefaults.graphqlUrl,
-      supabaseUrl: typeof parsed.supabaseUrl === 'string' ? parsed.supabaseUrl : hardcodedDefaults.supabaseUrl,
-      supabaseAnonKey: typeof parsed.supabaseAnonKey === 'string' ? parsed.supabaseAnonKey : hardcodedDefaults.supabaseAnonKey,
-    };
-  } catch {
-    return hardcodedDefaults;
-  }
-}
+const processEnvEntries = {
+  API_BASE_URL: process.env.API_BASE_URL,
+  GRAPHQL_URL: process.env.GRAPHQL_URL,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+};
 
 function parseEnv(content) {
   const entries = {};
@@ -57,23 +45,6 @@ function parseEnv(content) {
   return entries;
 }
 
-function buildConfig(envEntries, defaults) {
-  const supabaseAnonKey = envEntries.SUPABASE_ANON_KEY || defaults.supabaseAnonKey;
-
-  if (looksLikeSecretKey(supabaseAnonKey)) {
-    throw new Error(
-      'SUPABASE_ANON_KEY no puede ser una clave secreta. Usa la anon/public key de Supabase; nunca la service_role ni una key que empiece con sb_secret.'
-    );
-  }
-
-  return {
-    apiBaseUrl: envEntries.API_BASE_URL || defaults.apiBaseUrl,
-    graphqlUrl: envEntries.GRAPHQL_URL || defaults.graphqlUrl,
-    supabaseUrl: envEntries.SUPABASE_URL || defaults.supabaseUrl,
-    supabaseAnonKey,
-  };
-}
-
 function looksLikeSecretKey(value) {
   if (typeof value !== 'string') return false;
 
@@ -83,17 +54,49 @@ function looksLikeSecretKey(value) {
     || normalized.includes('secret');
 }
 
-const envEntries = existsSync(envPath)
-  ? parseEnv(readFileSync(envPath, 'utf8'))
-  : {};
+function buildEnvironment(envEntries) {
+  const supabaseAnonKey = envEntries.SUPABASE_ANON_KEY || hardcodedDefaults.supabaseAnonKey;
 
-const defaults = readTemplateDefaults();
+  if (looksLikeSecretKey(supabaseAnonKey)) {
+    throw new Error(
+      'SUPABASE_ANON_KEY no puede ser una clave secreta. Usa la anon/public key de Supabase; nunca la service_role ni una key que empiece con sb_secret.'
+    );
+  }
 
-if (!existsSync(envPath)) {
-  console.warn('[sync-runtime-config] No se encontro .env; se usaran valores por defecto.');
+  return {
+    production: true,
+    apiBaseUrl: envEntries.API_BASE_URL || hardcodedDefaults.apiBaseUrl,
+    graphqlUrl: envEntries.GRAPHQL_URL || hardcodedDefaults.graphqlUrl,
+    supabaseUrl: envEntries.SUPABASE_URL || hardcodedDefaults.supabaseUrl,
+    supabaseAnonKey,
+  };
 }
 
-const config = buildConfig(envEntries, defaults);
-writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+function toEnvironmentFile(environment) {
+  return [
+    'export const environment = {',
+    `  production: ${environment.production},`,
+    `  apiBaseUrl: ${JSON.stringify(environment.apiBaseUrl)},`,
+    `  graphqlUrl: ${JSON.stringify(environment.graphqlUrl)},`,
+    `  supabaseUrl: ${JSON.stringify(environment.supabaseUrl)},`,
+    `  supabaseAnonKey: ${JSON.stringify(environment.supabaseAnonKey)},`,
+    '};',
+    '',
+  ].join('\n');
+}
 
-console.log('[sync-runtime-config] Archivo public/config/app-config.json actualizado.');
+const envEntries = {
+  ...(existsSync(envPath) ? parseEnv(readFileSync(envPath, 'utf8')) : {}),
+  ...Object.fromEntries(
+    Object.entries(processEnvEntries).filter(([, value]) => typeof value === 'string' && value.length > 0)
+  ),
+};
+
+if (!existsSync(envPath)) {
+  console.warn('[sync-environment] No se encontro .env; se usaran valores por defecto.');
+}
+
+const environment = buildEnvironment(envEntries);
+writeFileSync(environmentProdPath, toEnvironmentFile(environment), 'utf8');
+
+console.log('[sync-environment] Archivo src/environments/environment.prod.ts actualizado.');

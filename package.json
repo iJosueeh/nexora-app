@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "sync:config": "node scripts/sync-runtime-config.mjs",
-    "start": "npm run sync:config && ng serve",
-    "serve": "npm run sync:config && ng serve",
-    "prebuild": "npm run sync:config",
+    "sync:environment": "node scripts/sync-runtime-config.mjs",
+    "start": "ng serve",
+    "serve": "ng serve",
+    "prebuild": "npm run sync:environment",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

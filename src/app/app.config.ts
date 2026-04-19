@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, inject } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
@@ -10,11 +10,11 @@ import { HttpLink } from 'apollo-angular/http';
 import { InMemoryCache } from '@apollo/client';
 import { from } from '@apollo/client/core';
 import { setContext } from '@apollo/client/link/context';
-import { RuntimeConfigService } from './core/config/runtime-config.service';
 import { API_BASE_URL, GRAPHQL_URL } from './core/tokens/api-endpoints.token';
 import { AuthSession } from './core/services/auth-session';
 import { SupabaseAuthService } from './core/services/supabase-auth.service';
 import { authTokenInterceptor } from './core/interceptors/auth-token.interceptor';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -28,14 +28,13 @@ export const appConfig: ApplicationConfig = {
       preventDuplicates: true,
       positionClass: 'toast-top-right',
     }),
-    provideAppInitializer(() => inject(RuntimeConfigService).load()),
     {
       provide: API_BASE_URL,
-      useFactory: () => inject(RuntimeConfigService).value.apiBaseUrl,
+      useValue: environment.apiBaseUrl,
     },
     {
       provide: GRAPHQL_URL,
-      useFactory: () => inject(RuntimeConfigService).value.graphqlUrl,
+      useValue: environment.graphqlUrl,
     },
     provideHttpClient(withInterceptors([authTokenInterceptor])),
     provideApollo(() => {
