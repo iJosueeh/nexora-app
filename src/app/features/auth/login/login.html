@@ -33,7 +33,8 @@
     <!-- Tab switcher -->
     <div class="flex gap-3 w-full border-b border-white/8 pb-4">
       <button
-        (click)="activeTab = 'login'"
+        (click)="setLoginTab()"
+        [disabled]="isSubmitting"
         class="flex-1 px-4 py-2 text-xs md:text-sm font-semibold rounded-t-lg border-b-2 transition-all duration-300"
         [ngClass]="{
           'border-[#df3432] text-[#f2f4f8]': activeTab === 'login',
@@ -43,7 +44,8 @@
         Iniciar sesión
       </button>
       <button
-        (click)="activeTab = 'signup'; goToSignUp()"
+        (click)="goToSignUp()"
+        [disabled]="isSubmitting"
         class="flex-1 px-4 py-2 text-xs md:text-sm font-semibold rounded-t-lg border-b-2 transition-all duration-300"
         [ngClass]="{
           'border-[#df3432] text-[#f2f4f8]': activeTab === 'signup',
@@ -78,6 +80,7 @@
             type="email"
             placeholder="usuario@utp.edu.pe"
             [(ngModel)]="email"
+            [disabled]="isSubmitting"
             class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
           />
         </div>
@@ -102,9 +105,10 @@
             [type]="showPassword ? 'text' : 'password'"
             placeholder="········"
             [(ngModel)]="password"
+            [disabled]="isSubmitting"
             class="flex-1 bg-transparent text-xs md:text-sm text-[#d6dbe4] placeholder-[#5a6270] outline-none"
           />
-          <button (click)="showPassword = !showPassword" class="text-[#5a6270] hover:text-[#7a8196] transition-colors duration-200" type="button">
+          <button (click)="toggleShowPassword()" [disabled]="isSubmitting" class="text-[#5a6270] hover:text-[#7a8196] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" type="button">
             @if (showPassword) {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
@@ -127,7 +131,9 @@
           [class.border-[#df3432]]="rememberMe"
           [class.border-white/25]="!rememberMe"
           [class.bg-transparent]="!rememberMe"
-          (click)="rememberMe = !rememberMe"
+          [class.opacity-60]="isSubmitting"
+          [class.cursor-not-allowed]="isSubmitting"
+          (click)="toggleRememberMe()"
         >
           @if (rememberMe) {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-3 h-3">
@@ -143,7 +149,7 @@
       <!-- Submit -->
       <button
         (click)="onLogin()"
-        [disabled]="isLoading"
+        [disabled]="isSubmitting"
         type="button"
         class="w-full flex items-center justify-center gap-2 bg-[#df3432] hover:bg-[#ee4542] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs md:text-sm tracking-[0.12em] uppercase py-3.5 md:py-4 rounded-xl transition-colors duration-200 mt-1"
       >

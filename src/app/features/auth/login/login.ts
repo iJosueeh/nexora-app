@@ -18,6 +18,9 @@ import { AuthApiService } from '../services/auth-api.service';
   styleUrl: './login.css',
 })
 export class Login {
+  private static readonly LOGIN_TIMEOUT_MS = 12_000;
+  private static readonly LOADING_FAILSAFE_MS = 20_000;
+
   activeTab: 'login' | 'signup' = 'login';
 
   email = '';
@@ -25,7 +28,10 @@ export class Login {
   rememberMe = false;
   showPassword = false;
   isLoading = false;
+  isSubmitting = false;
   readonly loadingMessage = LOADING_MESSAGES.AUTH.LOGIN_VALIDATING;
+
+  private loadingFailsafeId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private router: Router,
@@ -36,19 +42,41 @@ export class Login {
   ) { }
 
   goToSignUp(): void {
+    if (this.isSubmitting) return;
     this.router.navigate(['/register']);
   }
 
+  setLoginTab(): void {
+    if (this.isSubmitting) return;
+    this.activeTab = 'login';
+  }
+
+  toggleShowPassword(): void {
+    if (this.isSubmitting) return;
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleRememberMe(): void {
+    if (this.isSubmitting) return;
+    this.rememberMe = !this.rememberMe;
+  }
+
   async onLogin(): Promise<void> {
-    if (!this.email || !this.password || this.isLoading) return;
+    if (!this.email || !this.password || this.isSubmitting) return;
 
-    const email = this.email.trim();
+    const email = this.email.trim().toLowerCase();
     const password = this.password;
+    this.email = email;
 
-    this.isLoading = true;
+    this.isSubmitting = true;
+    this.setLoading(true);
     let sessionStarted = false;
     try {
-      const supabaseSession = await this.supabaseAuth.signInWithEmail(email, password);
+      const supabaseSession = await this.withTimeout(
+        this.supabaseAuth.signInWithEmail(email, password),
+        Login.LOGIN_TIMEOUT_MS,
+        'LOGIN_TIMEOUT'
+      );
 
       this.authSession.start(
         {
@@ -101,13 +129,49 @@ export class Login {
         this.authSession.clear();
       }
 
-      const message = this.supabaseAuth.isEmailNotConfirmedError(error)
+      const isTimeoutError = error instanceof Error && error.message === 'LOGIN_TIMEOUT';
+
+      const message = isTimeoutError
+        ? 'La validacion tardo demasiado. Revisa tu conexion e intenta nuevamente.'
+        : this.supabaseAuth.isEmailNotConfirmedError(error)
         ? 'Debes confirmar tu correo institucional antes de iniciar sesión.'
-        : 'No se pudo iniciar sesión. Verifica tus credenciales.';
+        : this.supabaseAuth.toHumanErrorMessage(error);
 
       this.toastr.error(message, 'Error');
     } finally {
-      this.isLoading = false;
+      this.setLoading(false);
+      this.isSubmitting = false;
     }
+  }
+
+  private setLoading(value: boolean): void {
+    this.isLoading = value;
+
+    if (this.loadingFailsafeId) {
+      clearTimeout(this.loadingFailsafeId);
+      this.loadingFailsafeId = null;
+    }
+
+    if (value) {
+      this.loadingFailsafeId = setTimeout(() => {
+        this.isLoading = false;
+      }, Login.LOADING_FAILSAFE_MS);
+    }
+  }
+
+  private withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorCode: string): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timeoutId = setTimeout(() => reject(new Error(errorCode)), timeoutMs);
+
+      promise
+        .then((value) => {
+          clearTimeout(timeoutId);
+          resolve(value);
+        })
+        .catch((error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        });
+    });
   }
 }
