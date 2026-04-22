@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { ToastrService } from 'ngx-toastr';
 
@@ -20,6 +21,7 @@ import { UPDATE_PROFILE_MUTATION } from '../../../graphql/graphql.queries';
 })
 export class ProfileSettingsPage {
   private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
   private readonly authSession = inject(AuthSession);
   private readonly apollo = inject(Apollo);
   private readonly storageService = inject(SupabaseStorageService);
@@ -71,6 +73,15 @@ export class ProfileSettingsPage {
     } else {
       this.previewBanner.set(null);
       this.form.patchValue({ bannerUrl: '' });
+    }
+  }
+
+  cancel(): void {
+    const username = this.user()?.username;
+    if (username) {
+      this.router.navigate(['/u', username]);
+    } else {
+      this.router.navigate(['/feed']);
     }
   }
 
