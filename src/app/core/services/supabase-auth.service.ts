@@ -232,7 +232,7 @@ export class SupabaseAuthService {
     return toHumanSupabaseErrorMessage(error);
   }
 
-  private getClient(): SupabaseClient {
+  public getClient(): SupabaseClient {
     if (this.client) return this.client;
 
     const { supabaseUrl, supabaseAnonKey } = environment;
@@ -240,11 +240,13 @@ export class SupabaseAuthService {
       throw new Error('Falta configurar Supabase en src/environments/environment.generated.ts (o environment.generated.prod.ts). Ejecuta "npm run sync:environment" y valida SUPABASE_URL/SUPABASE_ANON_KEY en .env.');
     }
 
+    // Inicializar una sola vez
     this.client = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        storageKey: `sb-${supabaseUrl.split('.')[0].split('//')[1]}-auth-token`
       },
     });
 

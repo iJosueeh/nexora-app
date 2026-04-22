@@ -11,6 +11,7 @@ import { AuthApiService } from '../../auth/services/auth-api.service';
 import { FeedService } from '../../feed/services/feed.service';
 import { FeedSidebar } from '../../feed/components/feed-sidebar/feed-sidebar';
 import { ShellLayout } from '../../../shared/components/shell-layout/shell-layout';
+import { ProfileMenu } from './components/profile-menu/profile-menu';
 import {
   ProfileCard,
   ProfileTab,
@@ -25,7 +26,7 @@ import {
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, FeedSidebar, ShellLayout],
+  imports: [CommonModule, FeedSidebar, ShellLayout, ProfileMenu],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.css',

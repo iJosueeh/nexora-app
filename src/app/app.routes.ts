@@ -25,6 +25,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/feed/pages/new-publication/new-publication-page').then(m => m.NewPublicationPage)
             },
             {
+                path: 'settings',
+                loadComponent: () => import('./features/profile/profile-settings/profile-settings').then(m => m.ProfileSettingsPage)
+            },
+            {
                 path: 'profile',
                 loadComponent: () => import('./features/profile/profile-page/profile-page').then(m => m.ProfilePage)
             },

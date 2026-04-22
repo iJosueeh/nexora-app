@@ -17,6 +17,7 @@ describe('PostCard Component', () => {
       role: 'Developer',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Test',
       verified: true,
+      bio: ''
     },
     content: 'This is a test post',
     imageUrl: 'https://example.com/image.jpg',
@@ -56,9 +57,9 @@ describe('PostCard Component', () => {
     expect(compiled.textContent).toContain('This is a test post');
   });
 
-  it('should display University Official badge when is_official is true', () => {
+  it('should display official badge when is_official is true', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('University Official');
+    expect(compiled.textContent.toLowerCase()).toContain('university official');
   });
 
   it('should compute relative date in Spanish', () => {

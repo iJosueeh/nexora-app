@@ -8,6 +8,7 @@ export interface AuthUser {
 	avatarUrl?: string;
 	bannerUrl?: string;
 	followersCount?: number;
+	followingCount?: number;
 	academicInterests?: string[];
 	roles?: string[];
 	profileComplete?: boolean;

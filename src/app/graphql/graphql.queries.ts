@@ -11,6 +11,7 @@ export const FEED_POSTS_QUERY = gql`
 			isOfficial
 			createdAt
 			commentsCount
+			imageUrl
 			autor {
 				id
 				username
@@ -32,6 +33,7 @@ export const PROFILE_POSTS_QUERY = gql`
 			isOfficial
 			createdAt
 			commentsCount
+			imageUrl
 			autor {
 				id
 				username
@@ -53,6 +55,7 @@ export const CREATE_PUBLICATION_MUTATION = gql`
 			isOfficial
 			createdAt
 			commentsCount
+			imageUrl
 			autor {
 				id
 				username
@@ -61,6 +64,25 @@ export const CREATE_PUBLICATION_MUTATION = gql`
 			}
 		}
 	}
+`;
+
+export const UPDATE_PROFILE_MUTATION = gql`
+  mutation UpdateProfile($input: UpdateProfileInput!) {
+    actualizarPerfil(input: $input) {
+      id
+      email
+      username
+      fullName
+      bio
+      career
+      avatarUrl
+      bannerUrl
+      followersCount
+      followingCount
+      academicInterests
+      profileComplete
+    }
+  }
 `;
 
 export const AVAILABLE_TAGS_QUERY = gql`

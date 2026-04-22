@@ -12,6 +12,7 @@ export interface AuthResponseDto {
   avatarUrl?: string;
   bannerUrl?: string;
   followersCount?: number;
+  followingCount?: number;
   academicInterests?: string[];
   profileComplete?: boolean;
 }

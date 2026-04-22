@@ -26,7 +26,12 @@ export class NewPublicationPage {
   onPublished(draft: PublicationDraft): void {
     this.publicationService
       .publish(draft)
-      .pipe(catchError(() => of(this.publicationService.buildOptimisticPost(draft))))
+      .pipe(
+        catchError((err) => {
+          console.error('[NewPublicationPage] Error publicando:', err);
+          return of(this.publicationService.buildOptimisticPost(draft));
+        })
+      )
       .subscribe((post) => {
         this.publicationQueue.queue(post);
         void this.router.navigate(['/feed']);

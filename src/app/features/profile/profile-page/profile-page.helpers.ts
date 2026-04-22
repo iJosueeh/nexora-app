@@ -46,8 +46,8 @@ export function buildProfileViewModel(user: AuthUser | null | undefined): Profil
     career: user?.career?.trim() || 'Ingeniería de Software',
     avatarUrl: user?.avatarUrl?.trim() || buildAvatarUrl(handle),
     bannerUrl: user?.bannerUrl?.trim() || buildBannerUrl(handle),
-    followersCount: user?.followersCount ?? 1240,
-    followingCount: 842,
+    followersCount: user?.followersCount ?? 0,
+    followingCount: user?.followingCount ?? 0,
     postsCount: 0,
     joinedLabel: 'Se unió recientemente',
     featuredInterests: (user?.academicInterests ?? []).slice(0, 4).length > 0

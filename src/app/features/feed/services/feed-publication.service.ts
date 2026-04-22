@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
+import { catchError, from, map, Observable, switchMap } from 'rxjs';
 
 import { AuthSession } from '@app/core/services/auth-session';
+import { SupabaseStorageService } from '@app/core/services/supabase-storage.service';
 import { CREATE_PUBLICATION_MUTATION } from '@app/graphql/graphql.queries';
 import { Post } from '@app/interfaces/feed';
 import { PublicationDraft } from '../pages/new-publication/publication-draft.model';
@@ -21,6 +22,7 @@ interface CreatePublicationMutationResponse {
     contenido: string;
     tags?: string[] | null;
     location?: string | null;
+    imageUrl?: string | null;
     isOfficial: boolean;
     createdAt?: string | null;
     commentsCount: number;
@@ -34,21 +36,62 @@ interface CreatePublicationMutationResponse {
 export class FeedPublicationService {
   private readonly apollo = inject(Apollo);
   private readonly authSession = inject(AuthSession);
+  private readonly storageService = inject(SupabaseStorageService);
 
   publish(draft: PublicationDraft): Observable<Post> {
-    return this.apollo
-      .mutate<CreatePublicationMutationResponse>({
-        mutation: CREATE_PUBLICATION_MUTATION,
-        variables: {
-          input: {
-            titulo: this.resolveTitle(draft),
-            contenido: draft.content.trim(),
-            tags: draft.tags?.map((tag) => this.normalizeTag(tag)) ?? [],
-            location: draft.location?.trim() || null
+    console.log('[FeedPublicationService] Iniciando publicación...', draft);
+    const firstImage = draft.attachments.find((file) => file.type.startsWith('image/'));
+    
+    const upload$: Observable<string | undefined> = firstImage 
+      ? from(this.uploadImage(firstImage))
+      : from(Promise.resolve(undefined));
+
+    return upload$.pipe(
+      switchMap((imageUrl: string | undefined) => {
+        console.log('[FeedPublicationService] Imagen procesada. URL:', imageUrl);
+        return this.apollo.mutate<CreatePublicationMutationResponse>({
+          mutation: CREATE_PUBLICATION_MUTATION,
+          variables: {
+            input: {
+              titulo: this.resolveTitle(draft),
+              contenido: draft.content.trim(),
+              tags: draft.tags?.map((tag) => this.normalizeTag(tag)) ?? [],
+              location: draft.location?.trim() || null,
+              imageUrl: imageUrl || null
+            }
           }
-        }
+        });
+      }),
+      map((result) => {
+        console.log('[FeedPublicationService] Mutación exitosa:', result.data?.crearPublicacion);
+        return this.mapPublishedPost(result.data?.crearPublicacion, draft);
+      }),
+      catchError((error) => {
+        console.error('[FeedPublicationService] ERROR CRÍTICO:', error);
+        throw error;
       })
-      .pipe(map((result) => this.mapPublishedPost(result.data?.crearPublicacion, draft)));
+    );
+  }
+
+  private async uploadImage(file: File): Promise<string> {
+    const user = this.authSession.getUser();
+    const userId = user?.id || 'anonymous';
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    
+    // Fallback seguro para randomUUID
+    const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2) + Date.now().toString(36);
+
+    const fileName = `${userId}/${uuid}.${fileExt}`;
+    console.log('[FeedPublicationService] Subiendo imagen a Supabase:', fileName);
+    
+    try {
+      return await this.storageService.uploadFile('nexora-posts', fileName, file);
+    } catch (error) {
+      console.error('[FeedPublicationService] Error en uploadFile:', error);
+      throw error;
+    }
   }
 
   buildOptimisticPost(draft: PublicationDraft): Post {
@@ -107,7 +150,7 @@ export class FeedPublicationService {
       title: resolvedTitle,
       content: resolvedContent,
       location: payload.location?.trim() || draft.location?.trim() || undefined,
-      imageUrl: this.resolvePreviewImageUrl(draft.attachments),
+      imageUrl: payload.imageUrl || this.resolvePreviewImageUrl(draft.attachments),
       createdAt: payload.createdAt ? new Date(payload.createdAt) : new Date(),
       likes: 0,
       comments: payload.commentsCount,

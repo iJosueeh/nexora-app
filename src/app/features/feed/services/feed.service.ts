@@ -21,6 +21,7 @@ interface FeedPostQueryModel {
   isOfficial: boolean;
   createdAt?: string | null;
   commentsCount: number;
+  imageUrl?: string | null;
   autor: FeedAuthorQueryModel;
 }
 
@@ -89,6 +90,7 @@ export class FeedService {
       is_official: post.isOfficial,
       title: post.titulo?.trim() || undefined,
       content: post.contenido,
+      imageUrl: post.imageUrl || undefined,
       location: post.location?.trim() || undefined,
       createdAt: post.createdAt ? new Date(post.createdAt) : new Date(),
       likes: 0,
