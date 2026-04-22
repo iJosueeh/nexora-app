@@ -1,33 +1,37 @@
 <section [formGroup]="form()" class="grid gap-5 sm:grid-cols-2">
   <div class="space-y-2">
-    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Nombre</label>
-    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(firstNameControl)" [class.border-white/10]="!isInvalid(firstNameControl)">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Nombre de Usuario</label>
+    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(usernameControl)" [class.border-white/10]="!isInvalid(usernameControl)">
       <input
-        formControlName="firstName"
+        formControlName="username"
         type="text"
-        placeholder="Tu nombre"
+        placeholder="ej: josue.tanta"
         class="w-full bg-transparent text-sm text-white outline-none placeholder:text-[#596275]"
-        [attr.aria-invalid]="isInvalid(firstNameControl)"
+        [attr.aria-invalid]="isInvalid(usernameControl)"
       />
     </div>
-    @if (isInvalid(firstNameControl)) {
-      <p class="text-xs text-[#ff8a8a]">El nombre es obligatorio.</p>
+    @if (isInvalid(usernameControl)) {
+      <p class="text-xs text-[#ff8a8a]">
+        @if (usernameControl?.errors?.['required']) { El nombre de usuario es obligatorio. }
+        @else if (usernameControl?.errors?.['minlength']) { Mínimo 3 caracteres. }
+        @else if (usernameControl?.errors?.['pattern']) { Solo letras, números, puntos, guiones y guiones bajos. }
+      </p>
     }
   </div>
 
   <div class="space-y-2">
-    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Apellido</label>
-    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(lastNameControl)" [class.border-white/10]="!isInvalid(lastNameControl)">
+    <label class="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#9ca3b5]">Nombre Completo</label>
+    <div class="rounded-2xl border bg-[#111520] px-4 py-3 transition-all duration-200 focus-within:border-[#ff4d4d]" [class.border-[#ff4d4d]]="isInvalid(fullNameControl)" [class.border-white/10]="!isInvalid(fullNameControl)">
       <input
-        formControlName="lastName"
+        formControlName="fullName"
         type="text"
-        placeholder="Tu apellido"
+        placeholder="Tu nombre y apellidos"
         class="w-full bg-transparent text-sm text-white outline-none placeholder:text-[#596275]"
-        [attr.aria-invalid]="isInvalid(lastNameControl)"
+        [attr.aria-invalid]="isInvalid(fullNameControl)"
       />
     </div>
-    @if (isInvalid(lastNameControl)) {
-      <p class="text-xs text-[#ff8a8a]">El apellido es obligatorio.</p>
+    @if (isInvalid(fullNameControl)) {
+      <p class="text-xs text-[#ff8a8a]">El nombre completo es obligatorio.</p>
     }
   </div>
 

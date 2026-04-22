@@ -90,7 +90,10 @@ export class Login {
       const response = await firstValueFrom(
         this.authApi.getSessionProfile().pipe(
           timeout(8000),
-          catchError(() => of(null))
+          catchError((error) => {
+            console.error('Error fetching session profile:', error);
+            return of(null);
+          })
         )
       );
 
@@ -124,20 +127,27 @@ export class Login {
 
       this.toastr.success('Inicio de sesión exitoso.', 'Bienvenido');
       this.router.navigate(['/feed']);
-    } catch (error) {
+    } catch (error: any) {
       if (sessionStarted) {
         this.authSession.clear();
       }
 
       const isTimeoutError = error instanceof Error && error.message === 'LOGIN_TIMEOUT';
+      
+      // Detailed error logging for debugging
+      console.error('Login error:', error);
 
-      const message = isTimeoutError
-        ? 'La validacion tardo demasiado. Revisa tu conexion e intenta nuevamente.'
-        : this.supabaseAuth.isEmailNotConfirmedError(error)
-        ? 'Debes confirmar tu correo institucional antes de iniciar sesión.'
-        : this.supabaseAuth.toHumanErrorMessage(error);
+      let message = this.supabaseAuth.toHumanErrorMessage(error);
+      
+      if (isTimeoutError) {
+        message = 'La validacion tardo demasiado. Revisa tu conexion e intenta nuevamente.';
+      } else if (this.supabaseAuth.isEmailNotConfirmedError(error)) {
+        message = 'Debes confirmar tu correo institucional antes de iniciar sesión.';
+      } else if (error?.status === 400 || error?.message?.includes('Invalid login credentials')) {
+        message = 'Correo o contraseña incorrectos. Verifica tus datos.';
+      }
 
-      this.toastr.error(message, 'Error');
+      this.toastr.error(message, 'Error de acceso');
     } finally {
       this.setLoading(false);
       this.isSubmitting = false;

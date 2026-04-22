@@ -12,12 +12,12 @@ export class RegisterIdentityStep {
   readonly form = input.required<FormGroup>();
   readonly careerOptions = input.required<string[]>();
 
-  get firstNameControl() {
-    return this.form().get('firstName');
+  get usernameControl() {
+    return this.form().get('username');
   }
 
-  get lastNameControl() {
-    return this.form().get('lastName');
+  get fullNameControl() {
+    return this.form().get('fullName');
   }
 
   get careerControl() {

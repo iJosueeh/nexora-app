@@ -78,7 +78,7 @@
 
           <!-- Actions -->
           <div class="flex items-center justify-end gap-4 border-t border-white/10 pt-8">
-            <button type="button" class="px-6 py-2.5 text-sm font-medium text-zinc-400 hover:text-white">Cancelar</button>
+            <button [disabled]="isSaving()" type="button" (click)="cancel()" class="px-6 py-2.5 text-sm font-medium text-zinc-400 hover:text-white disabled:opacity-50">Cancelar</button>
             <button [disabled]="form.invalid || isSaving()" type="submit" class="rounded-full bg-[#df3432] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#df3432]/20 transition-all hover:bg-[#ee4542] hover:shadow-[#df3432]/40 disabled:opacity-50">
               {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
             </button>
