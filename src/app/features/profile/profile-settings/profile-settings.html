@@ -1,0 +1,91 @@
+<app-shell-layout [showRight]="false" mode="feed">
+  <div shell-left>
+    <app-feed-sidebar></app-feed-sidebar>
+  </div>
+
+  <div shell-main class="h-full overflow-hidden">
+    <main class="h-full overflow-y-auto rounded-3xl border border-white/10 bg-[#0a0b10] shadow-2xl custom-scrollbar">
+      <!-- Header -->
+      <div class="sticky top-0 z-20 flex items-center gap-4 border-b border-white/10 bg-[#0a0b10]/80 px-6 py-4 backdrop-blur-md">
+        <h1 class="text-xl font-bold text-white">Configuración del Perfil</h1>
+      </div>
+
+      <div class="p-6 lg:p-8">
+        <form [formGroup]="form" (ngSubmit)="save()" class="space-y-10">
+          
+          <!-- Visuals Section -->
+          <div class="space-y-6">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-[#f0b9b1]">Apariencia</h2>
+            
+            <!-- Banner Upload -->
+            <div class="relative group h-48 w-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50">
+              <img [src]="previewBanner() || form.value.bannerUrl || 'assets/images/hero-bg.jpg'" class="h-full w-full object-cover opacity-60 transition-opacity group-hover:opacity-40" />
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                <label class="cursor-pointer rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md hover:bg-white/20">
+                  Cambiar portada
+                  <input type="file" class="hidden" (change)="onFileSelected($event, 'banner')" accept="image/*" />
+                </label>
+              </div>
+            </div>
+
+            <!-- Avatar Upload -->
+            <div class="flex items-center gap-6">
+              <div class="relative group h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-2 border-[#df3432]/30 bg-zinc-900 shadow-xl">
+                <img [src]="previewAvatar() || form.value.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nexora'" class="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                <label class="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  </svg>
+                  <input type="file" class="hidden" (change)="onFileSelected($event, 'avatar')" accept="image/*" />
+                </label>
+              </div>
+              <div class="space-y-1">
+                <h3 class="font-medium text-white">Foto de perfil</h3>
+                <p class="text-xs text-zinc-500">Recomendado: 400x400px. PNG o JPG.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Information Section -->
+          <div class="space-y-6">
+            <h2 class="text-sm font-semibold uppercase tracking-widest text-[#f0b9b1]">Información Personal</h2>
+            
+            <div class="grid gap-6 sm:grid-cols-2">
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-zinc-400">Nombre completo</label>
+                <input formControlName="fullName" type="text" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50" />
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-zinc-400">Nombre de usuario</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-3 text-zinc-500">@</span>
+                  <input formControlName="username" type="text" class="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-8 pr-4 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50" />
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-zinc-400">Carrera académica</label>
+              <input formControlName="career" type="text" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50" />
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-zinc-400">Biografía</label>
+              <textarea formControlName="bio" rows="4" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50"></textarea>
+              <p class="text-right text-[0.7rem] text-zinc-600">Cuenta lo que te apasiona a la comunidad.</p>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-4 border-t border-white/10 pt-8">
+            <button type="button" class="px-6 py-2.5 text-sm font-medium text-zinc-400 hover:text-white">Cancelar</button>
+            <button [disabled]="form.invalid || isSaving()" type="submit" class="rounded-full bg-[#df3432] px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#df3432]/20 transition-all hover:bg-[#ee4542] hover:shadow-[#df3432]/40 disabled:opacity-50">
+              {{ isSaving() ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </main>
+  </div>
+</app-shell-layout>

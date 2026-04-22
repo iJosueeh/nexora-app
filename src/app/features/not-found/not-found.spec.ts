@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { NotFound } from './not-found';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('NotFound', () => {
   let component: NotFound;
@@ -8,12 +8,12 @@ describe('NotFound', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NotFound],
+      imports: [NotFound, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotFound);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

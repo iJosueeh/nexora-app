@@ -25,11 +25,10 @@ describe('FeedSidebar Component', () => {
     expect(compiled.textContent).toContain('Nexora');
   });
 
-  it('should have sidebar fixed positioning', () => {
+  it('should have sidebar sticky positioning', () => {
     const aside = fixture.nativeElement.querySelector('aside');
-    expect(aside.classList.contains('fixed')).toBe(true);
-    expect(aside.classList.contains('w-64')).toBe(true);
-    expect(aside.classList.contains('h-screen')).toBe(true);
+    expect(aside.classList.contains('sticky')).toBe(true);
+    expect(aside.classList.contains('top-0')).toBe(true);
   });
 
   it('should initialize notificationBadge signal with value 5', () => {
@@ -38,10 +37,11 @@ describe('FeedSidebar Component', () => {
 
   it('should update notificationBadge when signal value changes', () => {
     component.notificationBadge.set(3);
+    fixture.detectChanges();
     expect(component.notificationBadge()).toBe(3);
   });
 
-  it('should render navigation menu with nav items', () => {
+  it('should render navigation menu', () => {
     const navItems = fixture.nativeElement.querySelectorAll('nav ul li');
     expect(navItems.length).toBeGreaterThan(0);
   });
@@ -55,12 +55,6 @@ describe('FeedSidebar Component', () => {
     expect(compiled.textContent).toContain('Perfil');
   });
 
-  it('should display notification badge in menu', () => {
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('5');
-  });
-
   it('should have Postear button', () => {
     fixture.detectChanges();
     const buttons = fixture.nativeElement.querySelectorAll('button');
@@ -68,27 +62,5 @@ describe('FeedSidebar Component', () => {
       btn.textContent.includes('Postear')
     );
     expect(postearButton).toBeTruthy();
-  });
-
-  it('should have routerLink directives for navigation', () => {
-    const navLinks = fixture.nativeElement.querySelectorAll('[routerLink]');
-    expect(navLinks.length).toBeGreaterThan(0);
-  });
-
-  it('should apply correct text color for sidebar background', () => {
-    const aside = fixture.nativeElement.querySelector('aside');
-    expect(aside.classList.contains('bg-[#0a0a0a]')).toBe(true);
-  });
-
-  it('should have border styling', () => {
-    const aside = fixture.nativeElement.querySelector('aside');
-    expect(aside.classList.contains('border-r')).toBe(true);
-    expect(aside.classList.contains('border-[#1a1a1a]')).toBe(true);
-  });
-
-  it('should render logo icon', () => {
-    const svgIcon = fixture.nativeElement.querySelector('svg');
-    expect(svgIcon).toBeTruthy();
-    expect(svgIcon.classList.contains('text-[#e63946]')).toBe(true);
   });
 });

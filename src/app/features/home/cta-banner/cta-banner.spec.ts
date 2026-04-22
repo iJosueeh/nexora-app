@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CtaBanner } from './cta-banner';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('CtaBanner', () => {
   let component: CtaBanner;
@@ -8,12 +8,12 @@ describe('CtaBanner', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CtaBanner],
+      imports: [CtaBanner, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CtaBanner);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

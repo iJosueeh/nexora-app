@@ -56,6 +56,7 @@ function resolveUser(payload: Record<string, unknown>, fallbackEmail: string): L
   const avatarUrl = getString(nestedUser, 'avatarUrl') || getString(payload, 'avatarUrl');
   const bannerUrl = getString(nestedUser, 'bannerUrl') || getString(payload, 'bannerUrl');
   const followersCount = getNumber(nestedUser, 'followersCount') ?? getNumber(payload, 'followersCount');
+  const followingCount = getNumber(nestedUser, 'followingCount') ?? getNumber(payload, 'followingCount');
   const academicInterests = getStringArray(nestedUser, 'academicInterests').length > 0
     ? getStringArray(nestedUser, 'academicInterests')
     : getStringArray(payload, 'academicInterests');
@@ -70,6 +71,7 @@ function resolveUser(payload: Record<string, unknown>, fallbackEmail: string): L
     avatarUrl: avatarUrl || undefined,
     bannerUrl: bannerUrl || undefined,
     followersCount: followersCount ?? undefined,
+    followingCount: followingCount ?? undefined,
     academicInterests: academicInterests.length > 0 ? academicInterests : undefined,
     roles,
     profileComplete,
