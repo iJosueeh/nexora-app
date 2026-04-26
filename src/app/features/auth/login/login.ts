@@ -9,6 +9,7 @@ import { SupabaseAuthService } from '../../../core/services/supabase-auth.servic
 import { Loading } from '../../../shared/components/loading/loading';
 import { LOADING_MESSAGES } from '../../../shared/constants/loading-messages';
 import { AuthApiService } from '../services/auth-api.service';
+import { normalizeEmail } from '../../../utils/email-normalization.util';
 
 @Component({
   selector: 'app-login',
@@ -64,7 +65,7 @@ export class Login {
   async onLogin(): Promise<void> {
     if (!this.email || !this.password || this.isSubmitting) return;
 
-    const email = this.email.trim().toLowerCase();
+    const email = normalizeEmail(this.email);
     const password = this.password;
     this.email = email;
 

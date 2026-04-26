@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { ScrollToTop } from './shared/components/scroll-to-top/scroll-to-top';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ScrollToTop],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

@@ -16,6 +16,18 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/home/home').then(m => m.Home)
             },
             {
+                path: 'explorar',
+                loadComponent: () => import('./features/home/components/explorar/explorar').then(m => m.ExplorarPage)
+            },
+            {
+                path: 'pulse',
+                loadComponent: () => import('./features/home/components/pulse/pulse').then(m => m.PulsePage)
+            },
+            {
+                path: 'eventos',
+                loadComponent: () => import('./features/home/components/eventos/eventos').then(m => m.EventosPage)
+            },
+            {
                 path: 'feed',
                 loadComponent: () => import('./features/feed/pages/feed-page/feed-page').then(m => m.FeedPage)
                 // canActivate: [authGuard]  // Deshabilitado para testing

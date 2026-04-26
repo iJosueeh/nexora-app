@@ -1,4 +1,5 @@
 import { finalize, firstValueFrom } from 'rxjs';
+import { normalizeEmail } from '../../../../utils/email-normalization.util';
 
 export async function submitAccountStep(ctx: any): Promise<void> {
   if (ctx.accountForm.invalid) {
@@ -7,7 +8,7 @@ export async function submitAccountStep(ctx: any): Promise<void> {
     return;
   }
 
-  const email = ctx.accountForm.controls.email.value.trim();
+  const email = normalizeEmail(ctx.accountForm.controls.email.value);
   const password = ctx.accountForm.controls.password.value;
 
   ctx.isLoading.set(true);
@@ -27,7 +28,7 @@ export async function submitAccountStep(ctx: any): Promise<void> {
 }
 
 export async function onVerifyEmailCode(ctx: any, token = ctx.verificationCode()): Promise<void> {
-  const email = ctx.accountForm.controls.email.value.trim();
+  const email = normalizeEmail(ctx.accountForm.controls.email.value);
   const cleanToken = token.replace(/\D/g, '').slice(0, 8);
 
   if (cleanToken.length !== 8) {
@@ -82,7 +83,7 @@ export async function onVerifyEmailCode(ctx: any, token = ctx.verificationCode()
 export async function onResendValidationEmail(ctx: any): Promise<void> {
   if (ctx.accountForm.invalid || ctx.isResendingEmail() || ctx.resendCooldownSeconds() > 0) return;
 
-  const email = ctx.accountForm.controls.email.value.trim();
+  const email = normalizeEmail(ctx.accountForm.controls.email.value);
   ctx.isResendingEmail.set(true);
   ctx.emailVerificationError.set('');
 
