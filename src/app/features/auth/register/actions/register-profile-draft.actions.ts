@@ -106,7 +106,7 @@ export function showStepValidationToast(ctx: any): void {
       ctx.toastr.error('Completa el correo y la contraseña para continuar.', 'Faltan datos');
       return;
     case 2:
-      ctx.toastr.error('Completa nombre, apellido y carrera para seguir.', 'Faltan datos');
+      ctx.toastr.error('Completa tu nombre de usuario y nombre completo para seguir.', 'Faltan datos');
       return;
     default:
       ctx.toastr.error('Selecciona tus intereses y acepta los términos para finalizar.', 'Faltan datos');
