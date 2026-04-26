@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 
 import { AuthSession } from './auth-session';
 import { environment } from '../../../environments/environment';
+import { normalizeEmail } from '../../utils/email-normalization.util';
 import {
   buildSupabaseSessionResult,
   isEmailNotConfirmedError,
@@ -22,7 +23,7 @@ export class SupabaseAuthService {
   private readonly router = inject(Router);
 
   private normalizeEmail(email: string): string {
-    return email.trim().toLowerCase();
+    return normalizeEmail(email);
   }
 
   async signUpWithEmail(email: string, password: string): Promise<void> {

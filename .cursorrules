@@ -1,0 +1,11 @@
+# Nexora AI Coding Standards
+
+Respetar siempre las reglas definidas en el archivo GEMINI.md de este directorio.
+
+Reglas críticas:
+1. Archivos .ts < 200 líneas (ideal 150).
+2. Usar solo syntax @if, @for, @switch (Control Flow moderno).
+3. Usar Angular Signals para reactividad.
+4. Tríada de archivos (.ts, .html, .css) obligatoria por componente.
+5. Todo CSS debe iniciar con :host { display: block; }.
+6. Dividir componentes grandes en subcomponentes en la carpeta /components.
