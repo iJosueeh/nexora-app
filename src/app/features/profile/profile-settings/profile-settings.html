@@ -66,13 +66,43 @@
 
             <div class="space-y-2">
               <label class="text-sm font-medium text-zinc-400">Carrera académica</label>
-              <input formControlName="career" type="text" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50" />
+              <input 
+                formControlName="career" 
+                type="text" 
+                list="careerOptions"
+                placeholder="Busca o escribe tu carrera"
+                class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50" 
+              />
+              <datalist id="careerOptions">
+                @for (option of careerOptions(); track option) {
+                  <option [value]="option"></option>
+                }
+              </datalist>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-zinc-400">Intereses Académicos</label>
+              <div class="flex flex-wrap gap-2 pt-2">
+                @for (interest of interestOptions(); track interest) {
+                  <button
+                    type="button"
+                    (click)="toggleInterest(interest)"
+                    [class]="isInterestSelected(interest) 
+                      ? 'bg-[#df3432] text-white border-[#df3432]' 
+                      : 'bg-white/5 text-zinc-400 border-white/10 hover:border-white/30'"
+                    class="rounded-full border px-4 py-1.5 text-xs font-medium transition-all"
+                  >
+                    {{ interest }}
+                  </button>
+                }
+              </div>
+              <p class="text-[0.7rem] text-zinc-600">Selecciona los temas que más te interesan para personalizar tu feed.</p>
             </div>
 
             <div class="space-y-2">
               <label class="text-sm font-medium text-zinc-400">Biografía</label>
-              <textarea formControlName="bio" rows="4" class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50"></textarea>
-              <p class="text-right text-[0.7rem] text-zinc-600">Cuenta lo que te apasiona a la comunidad.</p>
+              <textarea formControlName="bio" rows="4" placeholder="Cuenta algo sobre ti..." class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white focus:border-[#df3432]/50 focus:outline-none focus:ring-1 focus:ring-[#df3432]/50"></textarea>
+              <p class="text-right text-[0.7rem] text-zinc-600">Máximo 280 caracteres.</p>
             </div>
           </div>
 
