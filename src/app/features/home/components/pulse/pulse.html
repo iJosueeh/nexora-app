@@ -1,0 +1,16 @@
+<div class="px-6 py-10 lg:px-12">
+  <header class="mb-10 flex flex-col gap-2">
+    <h1 class="text-4xl font-black tracking-tight text-white">Pulso <span class="text-[#df3432]">Universitario</span></h1>
+    <p class="text-[0.68rem] uppercase tracking-[0.24em] text-zinc-500">Tendencias y académicos activos</p>
+  </header>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    @for (item of pulseItems(); track item.id) {
+      <app-pulse-item [item]="item"></app-pulse-item>
+    } @empty {
+      <div class="col-span-full py-20 text-center">
+        <p class="text-zinc-500">No hay actividad reciente en el Pulse.</p>
+      </div>
+    }
+  </div>
+</div>

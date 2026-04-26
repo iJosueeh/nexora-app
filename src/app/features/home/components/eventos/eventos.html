@@ -1,0 +1,29 @@
+<div class="px-6 py-10 lg:px-12">
+  <header class="mb-12 space-y-2">
+    <h1 class="text-4xl font-black tracking-tight text-white">Próximos <span class="text-[#df3432]">Eventos</span></h1>
+    <p class="text-zinc-400">Conecta cara a cara con la comunidad científica de la UTP.</p>
+  </header>
+
+  <!-- Filtros de Categoría -->
+  <div class="mb-10 flex flex-wrap gap-3">
+    @for (cat of categories(); track cat) {
+      <button 
+        (click)="selectedCategory.set(cat)"
+        [class]="selectedCategory() === cat ? 'bg-[#df3432] text-white border-[#df3432]' : 'bg-white/5 text-zinc-400 border-white/10 hover:border-white/30'"
+        class="rounded-full border px-6 py-2 text-sm font-semibold transition-all"
+      >
+        {{ cat }}
+      </button>
+    }
+  </div>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    @for (event of filteredEvents(); track event.id) {
+      <app-event-card [event]="event"></app-event-card>
+    } @empty {
+      <div class="col-span-full py-20 text-center">
+        <p class="text-lg text-zinc-500">No hay eventos programados en esta categoría.</p>
+      </div>
+    }
+  </div>
+</div>

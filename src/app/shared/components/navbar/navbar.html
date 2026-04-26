@@ -100,7 +100,7 @@
         <ul class="hidden items-center gap-6 lg:flex">
           <li>
             <a
-              routerLink="/funcionalidad"
+              routerLink="/explorar"
               routerLinkActive="text-[#f08f84] after:scale-x-100"
               [routerLinkActiveOptions]="{ exact: true }"
               class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
@@ -110,7 +110,7 @@
           </li>
           <li>
             <a
-              routerLink="/comunidad"
+              routerLink="/pulse"
               routerLinkActive="text-[#f08f84] after:scale-x-100"
               class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
             >
@@ -119,16 +119,16 @@
           </li>
           <li>
             <a
-              routerLink="/testimonios"
+              routerLink="/eventos"
               routerLinkActive="text-[#f08f84] after:scale-x-100"
               class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
             >
-              Testimonios
+              Eventos
             </a>
           </li>
           <li>
             <a
-              routerLink="/guia-practica"
+              routerLink="/home"
               routerLinkActive="text-[#f08f84] after:scale-x-100"
               class="relative pb-1.5 text-[0.76rem] font-medium text-[#878d99] transition-colors duration-200 hover:text-[#d6dae3] after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#df3432] after:transition-transform after:duration-300"
             >
@@ -166,10 +166,10 @@
   @if (mode() === 'public' && menuOpen()) {
     <div class="absolute left-0 right-0 top-full border-b border-white/8 bg-[#080a10] px-4 py-4 shadow-[0_22px_30px_rgba(0,0,0,0.45)] lg:hidden">
       <div class="mx-auto flex w-full max-w-352 flex-col gap-4">
-        <a routerLink="/funcionalidad" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Funcionalidad</a>
-        <a routerLink="/comunidad" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Comunidad</a>
-        <a routerLink="/testimonios" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Testimonios</a>
-        <a routerLink="/guia-practica" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Sobre Nosotros</a>
+        <a routerLink="/explorar" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Funcionalidad</a>
+        <a routerLink="/pulse" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Comunidad</a>
+        <a routerLink="/eventos" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Eventos</a>
+        <a routerLink="/home" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Sobre Nosotros</a>
         <hr class="border-white/6" />
         <a routerLink="/login" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Iniciar Sesión</a>
         <a routerLink="/register" (click)="closeMenu()" class="text-sm text-[#979dab] transition-colors hover:text-[#e3e7ee]">Únete a la comunidad</a>
