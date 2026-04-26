@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { Pulse } from './pulse';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('Pulse', () => {
   let component: Pulse;
@@ -8,12 +8,12 @@ describe('Pulse', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Pulse],
+      imports: [Pulse, RouterTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Pulse);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

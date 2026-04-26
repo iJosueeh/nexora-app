@@ -3,4 +3,5 @@ export interface RegisterIdentityRequest {
   username: string;
   fullName: string;
   career: string;
+  avatarUrl?: string;
 }

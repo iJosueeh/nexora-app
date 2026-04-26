@@ -1,8 +1,10 @@
 import { AuthUser } from '../../../interfaces/auth';
+import { Post } from '../../../interfaces/feed';
 
 export type ProfileTab = 'posts' | 'media' | 'likes';
 
 export interface ProfileCard {
+  id: string;
   title: string;
   label: string;
   imageUrl?: string;
@@ -44,9 +46,9 @@ export function buildProfileViewModel(user: AuthUser | null | undefined): Profil
     career: user?.career?.trim() || 'Ingeniería de Software',
     avatarUrl: user?.avatarUrl?.trim() || buildAvatarUrl(handle),
     bannerUrl: user?.bannerUrl?.trim() || buildBannerUrl(handle),
-    followersCount: user?.followersCount ?? 1240,
-    followingCount: 842,
-    postsCount: 156,
+    followersCount: user?.followersCount ?? 0,
+    followingCount: user?.followingCount ?? 0,
+    postsCount: 0,
     joinedLabel: 'Se unió recientemente',
     featuredInterests: (user?.academicInterests ?? []).slice(0, 4).length > 0
       ? (user?.academicInterests ?? []).slice(0, 4)
@@ -54,46 +56,25 @@ export function buildProfileViewModel(user: AuthUser | null | undefined): Profil
   };
 }
 
-export function buildProfilePosts(name: string): ProfileCard[] {
-  return [
-    {
-      title: 'Finals week survival kit: Caffeine and clean code.',
-      label: 'Academic Life',
-      imageUrl: 'https://images.unsplash.com/photo-1513258496099-48168024aec0?w=900&h=700&fit=crop',
-      badge: '2 hours ago',
-      description: `${name} compartió su rutina para sobrevivir la semana de exámenes sin perder foco.`,
-      variant: 'image',
-      likes: '245',
-      comments: '12',
-    },
-    {
-      title: 'The more I learn about Large Language Models, the more I appreciate the sheer complexity of human intuition.',
-      label: 'Thought',
-      badge: 'Yesterday',
-      description: 'Reflexión sobre investigación, producto y cómo el criterio humano sigue importando en la práctica diaria.',
-      variant: 'text',
-      likes: '1.1k',
-      comments: '84',
-    },
-    {
-      title: 'Walking through the Old Wing never fails to inspire deep focus.',
-      label: 'Moments',
-      imageUrl: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=900&h=700&fit=crop',
-      badge: '3 days ago',
-      description: 'Un vistazo al entorno académico que acompaña el trabajo y la concentración diaria.',
-      variant: 'image',
-      likes: '89',
-      comments: '3',
-    },
-    {
-      title: 'Optimizing React Hooks for Performance',
-      label: 'Link Shared',
-      badge: 'Read article',
-      description: 'A deep dive into why your renders are slow and how to fix them. Essential for the upcoming CS302 project.',
-      variant: 'link',
-      cta: 'Read article',
-    },
-  ];
+export function mapFeedPostsToProfileCards(posts: Post[]): ProfileCard[] {
+  return posts.map((post) => {
+    const content = post.content?.trim() ?? '';
+    const title = post.title?.trim()
+      || (content.length > 110 ? `${content.slice(0, 110)}...` : content)
+      || 'Publicación sin título';
+
+    return {
+      id: post.id,
+      title,
+      label: post.tags?.[0] ? `#${post.tags[0]}` : (post.is_official ? 'Oficial' : 'Publicación'),
+      imageUrl: post.imageUrl,
+      badge: formatRelativeTime(post.createdAt),
+      description: content || post.title?.trim() || 'Sin contenido',
+      variant: post.imageUrl ? 'image' : 'text',
+      likes: `${Math.max(0, post.likes ?? 0)}`,
+      comments: `${Math.max(0, post.comments ?? 0)}`,
+    };
+  });
 }
 
 export function buildAvatarUrl(seed = 'nexora'): string {
@@ -111,4 +92,25 @@ export function formatCompact(value: number): string {
   }
 
   return value.toString();
+}
+
+export function formatRelativeTime(value: Date | string): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Reciente';
+
+  const diffMs = Date.now() - date.getTime();
+  const minute = 60_000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+
+  if (diffMs < minute) return 'Hace un momento';
+  if (diffMs < hour) return `Hace ${Math.floor(diffMs / minute)} min`;
+  if (diffMs < day) return `Hace ${Math.floor(diffMs / hour)} h`;
+  if (diffMs < 7 * day) return `Hace ${Math.floor(diffMs / day)} d`;
+
+  return date.toLocaleDateString('es-PE', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }

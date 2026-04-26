@@ -29,12 +29,18 @@ export class AuthSession {
     const fallbackEmail = current?.user?.email ?? userPatch.email;
     if (!fallbackEmail) return;
 
+    const mergedUser = {
+      ...(current?.user ?? { email: fallbackEmail }),
+      ...userPatch,
+      email: (userPatch.email ?? fallbackEmail).trim(),
+    };
+
+    // Clean up empty strings or nulls to ensure consistent behavior
+    if (userPatch.avatarUrl === null || userPatch.avatarUrl === '') mergedUser.avatarUrl = undefined;
+    if (userPatch.bannerUrl === null || userPatch.bannerUrl === '') mergedUser.bannerUrl = undefined;
+
     const payload: SessionPayload = {
-      user: {
-        ...(current?.user ?? { email: fallbackEmail }),
-        ...userPatch,
-        email: (userPatch.email ?? fallbackEmail).trim(),
-      },
+      user: mergedUser as AuthUser,
       tokens: current?.tokens,
     };
 

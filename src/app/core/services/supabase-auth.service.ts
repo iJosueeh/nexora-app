@@ -21,9 +21,14 @@ export class SupabaseAuthService {
   private readonly authSession = inject(AuthSession);
   private readonly router = inject(Router);
 
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
   async signUpWithEmail(email: string, password: string): Promise<void> {
+    const normalizedEmail = this.normalizeEmail(email);
     const { error } = await this.getClient().auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/login`,
@@ -36,9 +41,10 @@ export class SupabaseAuthService {
   }
 
   async resendSignupEmail(email: string): Promise<void> {
+    const normalizedEmail = this.normalizeEmail(email);
     const { error } = await this.getClient().auth.resend({
       type: 'signup',
-      email,
+      email: normalizedEmail,
     });
 
     if (error) {
@@ -47,7 +53,8 @@ export class SupabaseAuthService {
   }
 
   async sendPasswordResetEmail(email: string): Promise<void> {
-    const { error } = await this.getClient().auth.resetPasswordForEmail(email, {
+    const normalizedEmail = this.normalizeEmail(email);
+    const { error } = await this.getClient().auth.resetPasswordForEmail(normalizedEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
 
@@ -154,8 +161,9 @@ export class SupabaseAuthService {
   }
 
   async signInWithEmail(email: string, password: string): Promise<SupabaseSignInResult> {
+    const normalizedEmail = this.normalizeEmail(email);
     const { data, error } = await this.getClient().auth.signInWithPassword({
-      email,
+      email: normalizedEmail,
       password,
     });
 
@@ -167,12 +175,13 @@ export class SupabaseAuthService {
       throw new Error('EMAIL_NOT_CONFIRMED');
     }
 
-    return buildSupabaseSessionResult(data.user.id, data.user.email ?? email, data.session);
+    return buildSupabaseSessionResult(data.user.id, data.user.email ?? normalizedEmail, data.session);
   }
 
   async verifySignupOtp(email: string, token: string): Promise<SupabaseSignInResult> {
+    const normalizedEmail = this.normalizeEmail(email);
     const { data, error } = await this.getClient().auth.verifyOtp({
-      email,
+      email: normalizedEmail,
       token,
       type: 'signup',
     });
@@ -185,12 +194,13 @@ export class SupabaseAuthService {
       throw new Error('OTP_VERIFICATION_FAILED');
     }
 
-    return buildSupabaseSessionResult(data.user.id, data.user.email ?? email, data.session);
+    return buildSupabaseSessionResult(data.user.id, data.user.email ?? normalizedEmail, data.session);
   }
 
   async verifyRecoveryOtp(email: string, token: string): Promise<SupabaseSignInResult> {
+    const normalizedEmail = this.normalizeEmail(email);
     const { data, error } = await this.getClient().auth.verifyOtp({
-      email,
+      email: normalizedEmail,
       token,
       type: 'recovery',
     });
@@ -203,7 +213,7 @@ export class SupabaseAuthService {
       throw new Error('RECOVERY_OTP_VERIFICATION_FAILED');
     }
 
-    return buildSupabaseSessionResult(data.user.id, data.user.email ?? email, data.session);
+    return buildSupabaseSessionResult(data.user.id, data.user.email ?? normalizedEmail, data.session);
   }
 
   isEmailNotConfirmedError(error: unknown): boolean {
@@ -222,19 +232,21 @@ export class SupabaseAuthService {
     return toHumanSupabaseErrorMessage(error);
   }
 
-  private getClient(): SupabaseClient {
+  public getClient(): SupabaseClient {
     if (this.client) return this.client;
 
     const { supabaseUrl, supabaseAnonKey } = environment;
     if (!supabaseUrl || !supabaseAnonKey) {
-      throw new Error('Falta configurar supabaseUrl o supabaseAnonKey en src/environments/environment.ts o environment.prod.ts');
+      throw new Error('Falta configurar Supabase en src/environments/environment.generated.ts (o environment.generated.prod.ts). Ejecuta "npm run sync:environment" y valida SUPABASE_URL/SUPABASE_ANON_KEY en .env.');
     }
 
+    // Inicializar una sola vez
     this.client = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        storageKey: `sb-${supabaseUrl.split('.')[0].split('//')[1]}-auth-token`
       },
     });
 

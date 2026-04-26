@@ -3,9 +3,11 @@ import { resolve } from 'node:path';
 
 const rootDir = process.cwd();
 const envPath = resolve(rootDir, '.env');
-const environmentProdPath = resolve(rootDir, 'src/environments/environment.prod.ts');
+const environmentPath = resolve(rootDir, 'src/environments/environment.generated.ts');
+const environmentProdPath = resolve(rootDir, 'src/environments/environment.generated.prod.ts');
 
 const hardcodedDefaults = {
+  production: false,
   apiBaseUrl: 'http://localhost:8080/api',
   graphqlUrl: 'http://localhost:8080/graphql',
   supabaseUrl: '',
@@ -56,6 +58,13 @@ function looksLikeSecretKey(value) {
 
 function buildEnvironment(envEntries) {
   const supabaseAnonKey = envEntries.SUPABASE_ANON_KEY || hardcodedDefaults.supabaseAnonKey;
+  const supabaseUrl = envEntries.SUPABASE_URL || hardcodedDefaults.supabaseUrl;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      'Faltan variables requeridas para Supabase. Define SUPABASE_URL y SUPABASE_ANON_KEY en nexora-app/.env o como variables de entorno antes de ejecutar start/build.'
+    );
+  }
 
   if (looksLikeSecretKey(supabaseAnonKey)) {
     throw new Error(
@@ -64,11 +73,20 @@ function buildEnvironment(envEntries) {
   }
 
   return {
-    production: true,
+    production: false,
     apiBaseUrl: envEntries.API_BASE_URL || hardcodedDefaults.apiBaseUrl,
     graphqlUrl: envEntries.GRAPHQL_URL || hardcodedDefaults.graphqlUrl,
-    supabaseUrl: envEntries.SUPABASE_URL || hardcodedDefaults.supabaseUrl,
+    supabaseUrl,
     supabaseAnonKey,
+  };
+}
+
+function buildProductionEnvironment(envEntries) {
+  const developmentEnvironment = buildEnvironment(envEntries);
+
+  return {
+    ...developmentEnvironment,
+    production: true,
   };
 }
 
@@ -97,6 +115,9 @@ if (!existsSync(envPath)) {
 }
 
 const environment = buildEnvironment(envEntries);
-writeFileSync(environmentProdPath, toEnvironmentFile(environment), 'utf8');
+const productionEnvironment = buildProductionEnvironment(envEntries);
 
-console.log('[sync-environment] Archivo src/environments/environment.prod.ts actualizado.');
+writeFileSync(environmentPath, toEnvironmentFile(environment), 'utf8');
+writeFileSync(environmentProdPath, toEnvironmentFile(productionEnvironment), 'utf8');
+
+console.log('[sync-environment] Archivos src/environments/environment.generated.ts y environment.generated.prod.ts actualizados.');

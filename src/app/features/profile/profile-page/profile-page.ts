@@ -4,38 +4,42 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { of } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { AuthSession } from '../../../core/services/auth-session';
 import { AuthApiService } from '../../auth/services/auth-api.service';
+import { FeedService } from '../../feed/services/feed.service';
 import { FeedSidebar } from '../../feed/components/feed-sidebar/feed-sidebar';
 import { ShellLayout } from '../../../shared/components/shell-layout/shell-layout';
+import { ProfileMenu } from './components/profile-menu/profile-menu';
 import {
   ProfileCard,
   ProfileTab,
   ProfileViewModel,
   buildAvatarUrl,
   buildBannerUrl,
-  buildProfilePosts,
   buildProfileViewModel,
   formatCompact,
+  mapFeedPostsToProfileCards,
 } from './profile-page.helpers';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, FeedSidebar, ShellLayout],
+  imports: [CommonModule, FeedSidebar, ShellLayout, ProfileMenu],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile-page.html',
   styleUrl: './profile-page.css',
 })
 export class ProfilePage {
   private readonly anonymousLockTriggerPx = 520;
+  private readonly profilePostsPageSize = 12;
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly authSession = inject(AuthSession);
   private readonly authApiService = inject(AuthApiService);
+  private readonly feedService = inject(FeedService);
 
   readonly isLoading = signal(true);
   readonly isGuest = signal(false);
@@ -45,6 +49,8 @@ export class ProfilePage {
   readonly isFollowing = signal(false);
   readonly copiedShare = signal(false);
   readonly isProfileMenuOpen = signal(false);
+  readonly isLoadingMorePosts = signal(false);
+  readonly hasMorePosts = signal(false);
   readonly activeTab = signal<ProfileTab>('posts');
   readonly profile = signal<ProfileViewModel | null>(null);
   readonly posts = signal<ProfileCard[]>([]);
@@ -71,13 +77,15 @@ export class ProfilePage {
     const isPreview = this.isPublicView() && !this.isAuthenticated();
     const previewLimit = 2;
 
+    const limitIfPreview = (items: ProfileCard[]) => (isPreview ? items.slice(0, previewLimit) : items);
+
     switch (this.activeTab()) {
       case 'media':
-        return isPreview ? cards.slice(0, previewLimit) : cards.slice(0, 2);
+        return limitIfPreview(cards.filter((card) => card.variant === 'image'));
       case 'likes':
-        return isPreview ? cards.slice(0, previewLimit) : cards.slice(1);
+        return limitIfPreview([...cards].sort((a, b) => Number(b.likes ?? 0) - Number(a.likes ?? 0)));
       default:
-        return isPreview ? cards.slice(0, previewLimit) : cards;
+        return limitIfPreview(cards);
     }
   });
   readonly showSkeleton = computed(() => this.isLoading() || this.isGuest());
@@ -99,7 +107,7 @@ export class ProfilePage {
 
   ngOnInit(): void {
     const routeHandle = this.normalizeHandle(this.route.snapshot.paramMap.get('handle'));
-    const sessionHandle = this.normalizeHandle(this.authSession.getUser()?.username);
+    const sessionHandle = this.resolvePreferredHandle(this.authSession.getUser());
 
     if (!routeHandle && sessionHandle) {
       void this.router.navigate(['/u', sessionHandle], { replaceUrl: true });
@@ -222,20 +230,37 @@ export class ProfilePage {
     this.activeTab.set(tab);
   }
 
+  loadMorePosts(): void {
+    const profileHandle = this.normalizeHandle(this.profile()?.handle);
+    if (!profileHandle || this.isLoadingMorePosts() || !this.hasMorePosts()) {
+      return;
+    }
+
+    this.loadProfilePosts(profileHandle, false);
+  }
+
   isMenuRoute(pathPrefix: string): boolean {
     return this.currentPath().startsWith(pathPrefix);
   }
 
   private loadFromSession(): void {
     const sessionUser = this.authSession.getUser();
+    const sessionHandle = this.resolvePreferredHandle(sessionUser);
+
     this.isPublicView.set(false);
     this.isOwnProfile.set(true);
     this.isProfileNotFound.set(false);
     this.profile.set(buildProfileViewModel(sessionUser ?? undefined));
-    this.posts.set(buildProfilePosts(this.displayName()));
+    this.posts.set([]);
     this.isFollowing.set(false);
-    this.isLoading.set(false);
-    this.updateAnonymousLockState();
+
+    if (!sessionHandle) {
+      this.isLoading.set(false);
+      this.updateAnonymousLockState();
+      return;
+    }
+
+    this.loadProfilePosts(sessionHandle, true);
   }
 
   private loadPublicProfile(handle: string): void {
@@ -247,7 +272,6 @@ export class ProfilePage {
     this.authApiService.getPublicProfile(handle)
       .pipe(
         catchError(() => of(null)),
-        finalize(() => this.isLoading.set(false)),
       )
       .subscribe((response) => {
         const user = response?.user;
@@ -255,13 +279,52 @@ export class ProfilePage {
           this.profile.set(null);
           this.posts.set([]);
           this.isProfileNotFound.set(true);
+          this.isLoading.set(false);
           this.updateAnonymousLockState();
           return;
         }
 
         this.profile.set(buildProfileViewModel(user));
-        this.posts.set(buildProfilePosts(user.fullName ?? user.username ?? 'Perfil público'));
+        this.posts.set([]);
         this.isFollowing.set(false);
+
+        const profileHandle = this.normalizeHandle(user.username) || handle;
+        this.loadProfilePosts(profileHandle, true);
+      });
+  }
+
+  private loadProfilePosts(profileHandle: string, reset: boolean): void {
+    const safeHandle = this.normalizeHandle(profileHandle);
+    const currentCards = reset ? [] : this.posts();
+    const offset = reset ? 0 : currentCards.length;
+
+    if (reset) {
+      this.isLoading.set(true);
+      this.posts.set([]);
+      this.hasMorePosts.set(false);
+    } else {
+      this.isLoadingMorePosts.set(true);
+    }
+
+    this.feedService.getPostsByUsername(safeHandle, this.profilePostsPageSize, offset)
+      .pipe(catchError(() => of([])))
+      .subscribe((posts) => {
+        const fetchedCards = mapFeedPostsToProfileCards(posts);
+        const cards = reset ? fetchedCards : [...currentCards, ...fetchedCards];
+
+        this.posts.set(cards);
+        this.hasMorePosts.set(fetchedCards.length === this.profilePostsPageSize);
+
+        const currentProfile = this.profile();
+        if (currentProfile) {
+          this.profile.set({
+            ...currentProfile,
+            postsCount: cards.length,
+          });
+        }
+
+        this.isLoading.set(false);
+        this.isLoadingMorePosts.set(false);
         this.updateAnonymousLockState();
       });
   }
@@ -269,6 +332,16 @@ export class ProfilePage {
   private normalizeHandle(handle: string | null | undefined): string {
     if (!handle) return '';
     return handle.replace(/^@/, '').trim().toLowerCase();
+  }
+
+  private resolvePreferredHandle(user: { username?: string; email?: string } | null | undefined): string {
+    const username = this.normalizeHandle(user?.username);
+    if (username) {
+      return username;
+    }
+
+    const emailPrefix = user?.email?.split('@')[0] ?? '';
+    return this.normalizeHandle(emailPrefix);
   }
 
   private updateAnonymousLockState(): void {

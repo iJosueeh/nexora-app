@@ -79,15 +79,17 @@ export function createRegisterState(fb: FormBuilder): RegisterState {
       { validators: [passwordsMatchValidator] }
     ),
     identity: fb.group({
-      firstName: fb.nonNullable.control('', [Validators.required, Validators.minLength(2)]),
-      lastName: fb.nonNullable.control('', [Validators.required, Validators.minLength(2)]),
-      career: fb.nonNullable.control('', [Validators.required]),
+      username: fb.nonNullable.control('', [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.pattern(/^[a-zA-Z0-9._-]+$/),
+      ]),
+      fullName: fb.nonNullable.control('', [Validators.required, Validators.minLength(3)]),
+      career: fb.nonNullable.control(''),
     }),
     preferences: fb.group({
       bio: fb.nonNullable.control('', [Validators.maxLength(280)]),
-      selectedInterests: fb.nonNullable.control<string[]>([], {
-        validators: [minSelectedInterestsValidator(1)],
-      }),
+      selectedInterests: fb.nonNullable.control<string[]>([]),
       isActive: fb.nonNullable.control(true),
       acceptedTerms: fb.nonNullable.control(false, [Validators.requiredTrue]),
     }),

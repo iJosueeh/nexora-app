@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 
-import { FEED_POSTS_QUERY } from '../../../graphql/graphql.queries';
+import { FEED_POSTS_QUERY, PROFILE_POSTS_QUERY } from '../../../graphql/graphql.queries';
 import { Post } from '../../../interfaces/feed';
 
 interface FeedAuthorQueryModel {
@@ -21,11 +21,16 @@ interface FeedPostQueryModel {
   isOfficial: boolean;
   createdAt?: string | null;
   commentsCount: number;
+  imageUrl?: string | null;
   autor: FeedAuthorQueryModel;
 }
 
 interface FeedPostsQueryResponse {
   obtenerFeedPrincipal: FeedPostQueryModel[];
+}
+
+interface ProfilePostsQueryResponse {
+  publicacionesPorUsuario: FeedPostQueryModel[];
 }
 
 @Injectable({
@@ -47,6 +52,37 @@ export class FeedService {
       .pipe(map((result) => (result.data?.obtenerFeedPrincipal ?? []).map((post) => this.mapPost(post))));
   }
 
+  getPostsByUsername(username: string, limit = 10, offset = 0): Observable<Post[]> {
+    const safeUsername = username.trim().toLowerCase();
+
+    if (!safeUsername) {
+      return of([]);
+    }
+
+    return this.apollo
+      .query<ProfilePostsQueryResponse>({
+        query: PROFILE_POSTS_QUERY,
+        variables: {
+          username: safeUsername,
+          limit: Math.max(1, limit),
+          offset: Math.max(0, offset),
+        },
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => (result.data?.publicacionesPorUsuario ?? []).map((post) => this.mapPost(post))),
+        catchError(() => this.getPosts(80, 0).pipe(
+          map((posts) => posts
+            .filter((post) => this.normalizeUsername(post.author.username) === safeUsername)
+            .slice(offset, offset + Math.max(1, limit)))
+        ))
+      );
+  }
+
+  private normalizeUsername(value?: string): string {
+    return (value ?? '').replace(/^@/, '').trim().toLowerCase();
+  }
+
   private mapPost(post: FeedPostQueryModel): Post {
     return {
       id: post.id,
@@ -54,6 +90,7 @@ export class FeedService {
       is_official: post.isOfficial,
       title: post.titulo?.trim() || undefined,
       content: post.contenido,
+      imageUrl: post.imageUrl || undefined,
       location: post.location?.trim() || undefined,
       createdAt: post.createdAt ? new Date(post.createdAt) : new Date(),
       likes: 0,
