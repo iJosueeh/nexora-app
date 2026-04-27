@@ -20,12 +20,20 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/home/components/explorar/explorar').then(m => m.ExplorarPage)
             },
             {
+                path: 'explorar/:slug',
+                loadComponent: () => import('./features/home/components/explorar/components/research-detail/research-detail').then(m => m.ResearchDetail)
+            },
+            {
                 path: 'pulse',
                 loadComponent: () => import('./features/home/components/pulse/pulse').then(m => m.PulsePage)
             },
             {
                 path: 'eventos',
                 loadComponent: () => import('./features/home/components/eventos/eventos').then(m => m.EventosPage)
+            },
+            {
+                path: 'eventos/:slug',
+                loadComponent: () => import('./features/home/components/eventos/components/event-detail/event-detail').then(m => m.EventDetail)
             },
             {
                 path: 'feed',
