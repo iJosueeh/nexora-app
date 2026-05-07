@@ -11,6 +11,8 @@ export const FEED_POSTS_QUERY = gql`
 			isOfficial
 			createdAt
 			commentsCount
+			likesCount
+			isLiked
 			imageUrl
 			autor {
 				id
@@ -33,6 +35,8 @@ export const PROFILE_POSTS_QUERY = gql`
 			isOfficial
 			createdAt
 			commentsCount
+			likesCount
+			isLiked
 			imageUrl
 			autor {
 				id
@@ -55,6 +59,8 @@ export const CREATE_PUBLICATION_MUTATION = gql`
 			isOfficial
 			createdAt
 			commentsCount
+			likesCount
+			isLiked
 			imageUrl
 			autor {
 				id
@@ -92,5 +98,52 @@ export const AVAILABLE_TAGS_QUERY = gql`
 			name
 			usageCount
 		}
+	}
+`;
+
+export const NOTIFICATION_HISTORY_QUERY = gql`
+	query NotificationHistory($limit: Int!, $offset: Int!) {
+		notificationHistory(limit: $limit, offset: $offset) {
+			id
+			type
+			content
+			isRead
+			createdAt
+			sender {
+				id
+				username
+				fullName
+				avatarUrl
+			}
+			post {
+				id
+				titulo
+				imageUrl
+			}
+		}
+	}
+`;
+
+export const UNREAD_NOTIFICATIONS_COUNT_QUERY = gql`
+	query UnreadNotificationsCount {
+		unreadNotificationsCount
+	}
+`;
+
+export const MARK_NOTIFICATION_AS_READ_MUTATION = gql`
+	mutation MarkNotificationAsRead($notificationId: ID!) {
+		markNotificationAsRead(notificationId: $notificationId)
+	}
+`;
+
+export const MARK_ALL_NOTIFICATIONS_AS_READ_MUTATION = gql`
+	mutation MarkAllNotificationsAsRead {
+		markAllNotificationsAsRead
+	}
+`;
+
+export const TOGGLE_LIKE_MUTATION = gql`
+	mutation ToggleLike($postId: ID!) {
+		toggleLike(postId: $postId)
 	}
 `;

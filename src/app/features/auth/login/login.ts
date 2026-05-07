@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
@@ -28,7 +28,7 @@ export class Login {
   password = '';
   rememberMe = false;
   showPassword = false;
-  isLoading = false;
+  isLoading = signal(false);
   isSubmitting = false;
   readonly loadingMessage = LOADING_MESSAGES.AUTH.LOGIN_VALIDATING;
 
@@ -156,7 +156,7 @@ export class Login {
   }
 
   private setLoading(value: boolean): void {
-    this.isLoading = value;
+    this.isLoading.set(value);
 
     if (this.loadingFailsafeId) {
       clearTimeout(this.loadingFailsafeId);
@@ -165,7 +165,7 @@ export class Login {
 
     if (value) {
       this.loadingFailsafeId = setTimeout(() => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }, Login.LOADING_FAILSAFE_MS);
     }
   }
