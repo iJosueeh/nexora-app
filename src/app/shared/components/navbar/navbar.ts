@@ -4,13 +4,14 @@ import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { AuthSession } from '../../../core/services/auth-session';
+import { NotificationCenterComponent } from '../notifications/notification-center';
 
 type NavbarMode = 'public' | 'authenticated' | 'feed';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NotificationCenterComponent],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
@@ -55,6 +56,7 @@ export class Navbar {
       .join('')
       .toUpperCase();
   });
+  readonly avatarUrl = computed(() => this.authSession.getUser()?.avatarUrl);
 
   constructor() {
     this.router.events

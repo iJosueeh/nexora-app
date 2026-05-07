@@ -28,23 +28,18 @@
         </div>
 
         <div class="ml-auto flex items-center gap-2.5">
-          <button
-            type="button"
-            class="flex h-9 w-9 items-center justify-center rounded-full border border-white/8 bg-white/5 text-[#9ca2af] transition-colors hover:text-[#e3e7ee]"
-            aria-label="Notificaciones"
-          >
-            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path>
-              <path d="M10 17a2 2 0 0 0 4 0"></path>
-            </svg>
-          </button>
+          <app-notification-center />
 
           <a
             [routerLink]="profileLink()"
-            class="flex h-9 w-9 items-center justify-center rounded-full border border-[#df3432]/30 bg-[#df3432]/15 text-[0.7rem] font-semibold tracking-[0.08em] text-[#f7c7c3]"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-[#df3432]/30 bg-[#df3432]/15 text-[0.7rem] font-semibold tracking-[0.08em] text-[#f7c7c3] overflow-hidden"
             aria-label="Perfil"
           >
-            {{ userInitials() }}
+            @if (avatarUrl()) {
+              <img [src]="avatarUrl()" class="h-full w-full object-cover" alt="Avatar" />
+            } @else {
+              {{ userInitials() }}
+            }
           </a>
         </div>
       }
@@ -73,6 +68,7 @@
         </ul>
 
         <div class="ml-auto flex items-center gap-2.5">
+          <app-notification-center />
           <a
             routerLink="/feed"
             class="hidden rounded-md border border-white/8 bg-white/5 px-3 py-2 text-[0.64rem] font-bold uppercase tracking-[0.13em] text-[#e3e7ee] transition-colors duration-200 hover:bg-white/8 md:inline-flex"
@@ -81,10 +77,14 @@
           </a>
           <a
             [routerLink]="profileLink()"
-            class="flex h-9 w-9 items-center justify-center rounded-full border border-[#df3432]/30 bg-[#df3432]/15 text-[0.7rem] font-semibold tracking-[0.08em] text-[#f7c7c3]"
+            class="flex h-9 w-9 items-center justify-center rounded-full border border-[#df3432]/30 bg-[#df3432]/15 text-[0.7rem] font-semibold tracking-[0.08em] text-[#f7c7c3] overflow-hidden"
             aria-label="Sesión activa"
           >
-            {{ userInitials() }}
+            @if (avatarUrl()) {
+              <img [src]="avatarUrl()" class="h-full w-full object-cover" alt="Avatar" />
+            } @else {
+              {{ userInitials() }}
+            }
           </a>
           <button
             type="button"

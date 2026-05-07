@@ -36,6 +36,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/home/components/eventos/components/event-detail/event-detail').then(m => m.EventDetail)
             },
             {
+                path: 'feed/notifications',
+                loadComponent: () => import('./features/feed/pages/notifications-page/notifications-page').then(m => m.NotificationsPage)
+            },
+            {
                 path: 'feed',
                 loadComponent: () => import('./features/feed/pages/feed-page/feed-page').then(m => m.FeedPage)
                 // canActivate: [authGuard]  // Deshabilitado para testing

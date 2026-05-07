@@ -71,8 +71,8 @@ export function mapFeedPostsToProfileCards(posts: Post[]): ProfileCard[] {
       badge: formatRelativeTime(post.createdAt),
       description: content || post.title?.trim() || 'Sin contenido',
       variant: post.imageUrl ? 'image' : 'text',
-      likes: `${Math.max(0, post.likes ?? 0)}`,
-      comments: `${Math.max(0, post.comments ?? 0)}`,
+      likes: `${Math.max(0, post.likesCount ?? 0)}`,
+      comments: `${Math.max(0, post.commentsCount ?? 0)}`,
     };
   });
 }
